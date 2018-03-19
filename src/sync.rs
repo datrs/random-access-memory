@@ -1,5 +1,5 @@
-/// Main constructor. Creates a new `RandomAccessMemory` instance.
-pub struct RandomAccessMemory {
+/// A synchronous implementation of `random_access_memory`.
+pub struct Sync {
   /// The length length of each buffer.
   pub page_size: usize,
 
@@ -10,10 +10,10 @@ pub struct RandomAccessMemory {
   pub length: u64,
 }
 
-impl RandomAccessMemory {
-  /// Create a new `RandomAccessMemory` instance.
+impl Sync {
+  /// Create a new `Sync` instance.
   pub fn new() -> Self {
-    RandomAccessMemory {
+    Sync {
       page_size: 1024 * 1024,
       buffers: Vec::new(),
       length: 0,

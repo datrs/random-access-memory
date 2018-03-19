@@ -10,7 +10,7 @@
 //! ```rust,ignore
 //! extern crate random_access_memory as ram;
 //!
-//! let file = ram::sync::new();
+//! let file = ram::Sync::new();
 //! file.write(0, b"hello")?;
 //! file.write(0, b" world")?;
 //! let text = file.read(0, 11,)?;
@@ -18,6 +18,6 @@
 //! ```
 
 /// Synchronous implementation.
-pub mod sync_impl;
+mod sync;
 
-pub use sync_impl::RandomAccessMemory as sync;
+pub use sync::*;
