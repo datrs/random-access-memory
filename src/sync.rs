@@ -12,7 +12,13 @@ pub struct RandomAccessMemory {
 
 impl RandomAccessMemory {
   /// Create a new `RandomAccessMemory` instance.
-  pub fn new() {}
+  pub fn new() -> Self {
+    RandomAccessMemory {
+      page_size: 1024 * 1024,
+      buffers: Vec::new(),
+      length: 0,
+    }
+  }
 
   /// Read bytes from memory.
   pub fn read() {}
