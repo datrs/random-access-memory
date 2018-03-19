@@ -20,11 +20,11 @@ impl RandomAccessMemory {
     }
   }
 
+  /// Write bytes to memory.
+  // pub fn write(offset: u64, data: Vec<u8>) {}
+
   /// Read bytes from memory.
   pub fn read() {}
-
-  /// Write bytes to memory.
-  pub fn write() {}
 
   /// Delete bytes from memory.
   pub fn del() {}
