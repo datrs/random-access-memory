@@ -12,6 +12,10 @@ Continuously read,write to memory using random offsets and lengths.
 $ cargo add random-access-memory
 ```
 
+## Tasks
+- [ ] Sync implementation.
+- [ ] Async implementation (wait for futures 1.0.0).
+
 ## License
 [Apache-2.0](./LICENSE)
 
