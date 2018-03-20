@@ -10,10 +10,10 @@
 //! ```rust,ignore
 //! extern crate random_access_memory as ram;
 //!
-//! let file = ram::Sync::new();
+//! let mut file = ram::Sync::new();
 //! file.write(0, b"hello")?;
-//! file.write(0, b" world")?;
-//! let text = file.read(0, 11,)?;
+//! file.write(5, b" world")?;
+//! let text = file.read(0, 11)?;
 //! assert!(text, b"hello world");
 //! ```
 

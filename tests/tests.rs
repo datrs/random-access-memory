@@ -7,11 +7,16 @@ mod sync {
   }
 
   #[test]
-  fn can_open_buffer_noop() {
-    let file = ram::Sync::new();
-    assert!(file.open().is_ok());
+  fn can_open_buffer() {
+    let mut file = ram::Sync::new();
+    file.write(0, b"hello").unwrap();
+    assert!(file.opened);
   }
 
   #[test]
-  fn can_write() {}
+  fn can_write() {
+    let mut file = ram::Sync::new();
+    file.write(0, b"hello").unwrap();
+    file.write(5, b" world").unwrap();
+  }
 }
