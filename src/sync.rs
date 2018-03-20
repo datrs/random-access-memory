@@ -1,6 +1,7 @@
+extern crate failure;
 extern crate random_access_storage as random_access;
 
-use self::random_access::Error;
+use failure::Error;
 
 /// Main constructor.
 pub struct Sync;
@@ -49,19 +50,19 @@ impl random_access::SyncMethods for SyncMethods {
     Ok(())
   }
 
-  fn write(&mut self, offset: u64, data: &[u8]) -> Result<(), Error> {
-    if (offset as usize + data.len()) > self.length {
-      self.length = offset as usize + data.len();
+  fn write(&mut self, offset: usize, data: &[u8]) -> Result<(), Error> {
+    if (offset + data.len()) > self.length {
+      self.length = offset + data.len();
     }
 
     let mut data = data;
-    let mut i: usize = offset as usize / self.page_size;
-    let mut rel: usize = offset as usize - (i * self.page_size);
+    let mut i: usize = offset / self.page_size;
+    let mut rel: usize = offset - (i * self.page_size);
 
     // Iterate over data, write to buffers.
     while data.len() > 0 {
       let next = if (rel + data.len()) > self.page_size {
-        &data[..(self.page_size as usize - rel)]
+        &data[..(self.page_size - rel)]
       } else {
         data
       };
@@ -98,12 +99,14 @@ impl random_access::SyncMethods for SyncMethods {
     Ok(())
   }
 
-  fn read(&mut self, offset: u64, length: u64) -> Result<&[u8], Error> {
-    let foob = b"placeholder";
-    Ok(foob)
+  fn read(&mut self, offset: usize, length: usize) -> Result<&[u8], Error> {
+    if (offset + length) > self.length {
+      bail!("Could not satisfy length");
+    }
+    Ok(b"placeholder")
   }
 
-  fn del(&mut self, offset: u64, length: u64) -> Result<(), Error> {
+  fn del(&mut self, _offset: usize, _length: usize) -> Result<(), Error> {
     Ok(())
   }
 }

@@ -11,3 +11,4 @@ authors = ["datrs <yoshuawuyts@gmail.com>"]
 random-access-storage = { path = '../random-access-storage' }
 # random-access-storage = "0.2.0"
 failure = "0.1.1"
+failure_derive = "0.1.1"
