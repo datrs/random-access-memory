@@ -59,39 +59,41 @@ impl random_access::SyncMethods for SyncMethods {
     let mut rel: usize = offset as usize - (i * self.page_size);
 
     // Iterate over data, write to buffers.
-    let next = if (rel + data.len()) > self.page_size {
-      &data[..(self.page_size as usize - rel)]
-    } else {
-      data
-    };
-
-    // Allocate buffer if none matches
-    if let &None = &self.buffers.get(i) {
-      let buf = if (rel == 0) && (next.len() == self.page_size) {
-        next.to_vec()
+    while data.len() > 0 {
+      let next = if (rel + data.len()) > self.page_size {
+        &data[..(self.page_size as usize - rel)]
       } else {
-        calloc(self.page_size)
+        data
       };
 
-      // FIXME(yw): this should work, but doesn't. Instead we assume we just
-      // push to the end of the buffer.
-      // &self.buffers[i] = buf;
-      &self.buffers.push(buf);
+      // Allocate buffer if none matches
+      if let &None = &self.buffers.get(i) {
+        let buf = if (rel == 0) && (next.len() == self.page_size) {
+          next.to_vec()
+        } else {
+          calloc(self.page_size)
+        };
+
+        // FIXME(yw): this should work, but doesn't. Instead we assume we just
+        // push to the end of the buffer.
+        // &self.buffers[i] = buf;
+        &self.buffers.push(buf);
+      }
+
+      let _buf = &self.buffers[i];
+
+      // TODO(yw): implement data copying
+      // if buf.as_slice() != next {
+      //   next.copy_from_slice(&buf[rel..]);
+      // }
+      // if next == data {
+      //   break
+      // }
+
+      i += 1;
+      rel = 0;
+      data = &data[next.len()..];
     }
-
-    let mut buf = &self.buffers[i];
-
-    // TODO(yw): implement data copying
-    // if buf.as_slice() != next {
-    //   next.copy_from_slice(&buf[rel..]);
-    // }
-    // if next == data {
-    //   break
-    // }
-
-    i += 1;
-    rel = 0;
-    data = &data[next.len()..];
 
     Ok(())
   }
