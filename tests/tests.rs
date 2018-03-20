@@ -19,4 +19,14 @@ mod sync {
     file.write(0, b"hello").unwrap();
     file.write(5, b" world").unwrap();
   }
+
+  #[test]
+  fn can_read() {
+    let mut file = ram::Sync::new();
+    file.write(0, b"hello").unwrap();
+    file.write(5, b" world").unwrap();
+    let text = file.read(0, 11).unwrap();
+    let text = String::from_utf8(text.to_vec()).unwrap();
+    assert_eq!(text, "hello world");
+  }
 }

@@ -14,7 +14,7 @@
 //! file.write(0, b"hello")?;
 //! file.write(5, b" world")?;
 //! let text = file.read(0, 11)?;
-//! assert!(text, b"hello world");
+//! assert_eq!(text, b"hello world");
 //! ```
 
 /// Synchronous implementation.
