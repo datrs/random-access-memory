@@ -8,5 +8,6 @@ description = "Continuously read,write to memory using random offsets and length
 authors = ["datrs <yoshuawuyts@gmail.com>"]
 
 [dependencies]
-random-access-storage = "0.2.0"
+random-access-storage = { path = '../random-access-storage' }
+# random-access-storage = "0.2.0"
 failure = "0.1.1"

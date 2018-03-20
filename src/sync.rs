@@ -41,21 +41,72 @@ pub struct SyncMethods {
   pub buffers: Vec<Vec<u8>>,
 
   /// Total length of the data.
-  length: u64,
+  length: usize,
 }
 
 impl random_access::SyncMethods for SyncMethods {
-  /// Open the instance (noop).
-  fn open(&self) -> Result<(), Error> {
+  fn open(&mut self) -> Result<(), Error> {
     Ok(())
   }
 
-  /// Write bytes to memory.
-  fn write(&self, offset: u64, data: Vec<u8>) -> Result<(), Error> {}
+  fn write(&mut self, offset: u64, data: &[u8]) -> Result<(), Error> {
+    if (offset as usize + data.len()) > self.length {
+      self.length = offset as usize + data.len();
+    }
 
-  /// Read bytes from memory.
-  fn read(&self, offset: u64, length: u64) -> Result<Vec<u8>, Error> {}
+    let mut data = data;
+    let mut i: usize = offset as usize / self.page_size;
+    let mut rel: usize = offset as usize - (i * self.page_size);
 
-  /// Delete bytes from memory.
-  fn del(&self, offset: u64, length: u64) -> Result<(), Error> {}
+    // Iterate over data, write to buffers.
+    let next = if (rel + data.len()) > self.page_size {
+      &data[..(self.page_size as usize - rel)]
+    } else {
+      data
+    };
+
+    // Allocate buffer if none matches
+    if let &None = &self.buffers.get(i) {
+      let buf = if (rel == 0) && (next.len() == self.page_size) {
+        next.to_vec()
+      } else {
+        calloc(self.page_size)
+      };
+
+      // FIXME(yw): this should work, but doesn't. Instead we assume we just
+      // push to the end of the buffer.
+      // &self.buffers[i] = buf;
+      &self.buffers.push(buf);
+    }
+
+    let mut buf = &self.buffers[i];
+
+    // TODO(yw): implement data copying
+    // if buf.as_slice() != next {
+    //   next.copy_from_slice(&buf[rel..]);
+    // }
+    // if next == data {
+    //   break
+    // }
+
+    i += 1;
+    rel = 0;
+    data = &data[next.len()..];
+
+    Ok(())
+  }
+
+  fn read(&mut self, offset: u64, length: u64) -> Result<&[u8], Error> {
+    let foob = b"placeholder";
+    Ok(foob)
+  }
+
+  fn del(&mut self, offset: u64, length: u64) -> Result<(), Error> {
+    Ok(())
+  }
+}
+
+#[inline]
+fn calloc(len: usize) -> Vec<u8> {
+  Vec::with_capacity(len)
 }
