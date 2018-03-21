@@ -138,7 +138,26 @@ impl random_access::SyncMethods for SyncMethods {
     Ok(data)
   }
 
-  fn del(&mut self, _offset: usize, _length: usize) -> Result<(), Error> {
+  fn del(&mut self, offset: usize, length: usize) -> Result<(), Error> {
+    let overflow = offset % self.page_size;
+    let inc = match overflow {
+      0 => 0,
+      _ => self.page_size - overflow,
+    };
+
+    if inc < length {
+      let mut offset = offset + inc;
+      let length = length - overflow;
+      let end = offset + length;
+      let mut i = offset - self.page_size;
+
+      while (offset + self.page_size <= end) && i < self.buffers.capacity() {
+        self.buffers.remove(i);
+        offset += self.page_size;
+        i += 1;
+      }
+    }
+
     Ok(())
   }
 }
