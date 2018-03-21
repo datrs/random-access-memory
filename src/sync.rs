@@ -1,6 +1,10 @@
 extern crate failure;
 extern crate random_access_storage as random_access;
 
+// macro_rules! debug {
+//   ($name:expr, $val:expr) => (println!(concat!(" > ", $name, " {:?}"), $val););
+// }
+
 use failure::Error;
 use std::cmp;
 
@@ -76,6 +80,7 @@ impl random_access::SyncMethods for SyncMethods {
           calloc(self.page_size)
         };
 
+        // Grow self.buffers if needed.
         if self.buffers.len() < i + 1 {
           self.buffers.resize(i + 1, buf);
         } else {
@@ -83,15 +88,15 @@ impl random_access::SyncMethods for SyncMethods {
         }
       }
 
-      let _buf = &self.buffers[i];
-
-      // TODO(yw): implement data copying
-      // if buf.as_slice() != next {
-      //   next.copy_from_slice(&buf[rel..]);
-      // }
-      // if next == data {
-      //   break
-      // }
+      // NOTE: we need to match Some in this case,
+      // alternatively we could use the `unsafe`
+      // `get_unchecked` method, but yeah nah.
+      if let Some(buffer) = self.buffers.get_mut(i) {
+        for i in 0..next.len() {
+          let byte = next[i];
+          &buffer.push(byte);
+        }
+      }
 
       i += 1;
       rel = 0;
@@ -111,15 +116,14 @@ impl random_access::SyncMethods for SyncMethods {
     let mut i = offset / self.page_size;
     let mut rel = offset - (i / self.page_size);
 
-    while ptr < data.len() {
+    while ptr < data.capacity() {
       let len = self.page_size - rel;
-
       match &self.buffers.get(i) {
-        &Some(buf) => for i in ptr..rel {
-          data.push(buf[i]);
+        &Some(buf) => for i in ptr..buf.len() {
+          data.push(buf[rel + i]);
         },
         &None => {
-          let max = cmp::min(data.len(), ptr + len);
+          let max = cmp::min(data.capacity(), ptr + len);
           for i in ptr..max {
             data[i] = 0;
           }
