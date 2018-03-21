@@ -2,6 +2,7 @@ extern crate failure;
 extern crate random_access_storage as random_access;
 
 use failure::Error;
+use std::cmp;
 
 /// Main constructor.
 pub struct Sync;
@@ -56,8 +57,8 @@ impl random_access::SyncMethods for SyncMethods {
     }
 
     let mut data = data;
-    let mut i: usize = offset / self.page_size;
-    let mut rel: usize = offset - (i * self.page_size);
+    let mut i = offset / self.page_size;
+    let mut rel = offset - (i * self.page_size);
 
     // Iterate over data, write to buffers.
     while data.len() > 0 {
@@ -75,10 +76,11 @@ impl random_access::SyncMethods for SyncMethods {
           calloc(self.page_size)
         };
 
-        // FIXME(yw): this should work, but doesn't. Instead we assume we just
-        // push to the end of the buffer.
-        // &self.buffers[i] = buf;
-        &self.buffers.push(buf);
+        if self.buffers.len() < i + 1 {
+          self.buffers.resize(i + 1, buf);
+        } else {
+          self.buffers[i] = buf;
+        }
       }
 
       let _buf = &self.buffers[i];
@@ -99,11 +101,37 @@ impl random_access::SyncMethods for SyncMethods {
     Ok(())
   }
 
-  fn read(&mut self, offset: usize, length: usize) -> Result<&[u8], Error> {
+  fn read(&mut self, offset: usize, length: usize) -> Result<Vec<u8>, Error> {
     if (offset + length) > self.length {
       bail!("Could not satisfy length");
     }
-    Ok(b"placeholder")
+
+    let mut data = Vec::with_capacity(length);
+    let mut ptr = 0;
+    let mut i = offset / self.page_size;
+    let mut rel = offset - (i / self.page_size);
+
+    while ptr < data.len() {
+      let len = self.page_size - rel;
+
+      match &self.buffers.get(i) {
+        &Some(buf) => for i in ptr..rel {
+          data.push(buf[i]);
+        },
+        &None => {
+          let max = cmp::min(data.len(), ptr + len);
+          for i in ptr..max {
+            data[i] = 0;
+          }
+        }
+      }
+
+      ptr += len;
+      i += 1;
+      rel = 0;
+    }
+
+    Ok(data)
   }
 
   fn del(&mut self, _offset: usize, _length: usize) -> Result<(), Error> {
