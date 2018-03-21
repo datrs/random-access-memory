@@ -13,7 +13,7 @@ $ cargo add random-access-memory
 ```
 
 ## Tasks
-- [ ] Sync implementation.
+- [x] Sync implementation.
 - [ ] Async implementation (wait for futures 1.0.0).
 
 ## License
