@@ -17,7 +17,7 @@ $ cargo add random-access-memory
 - [ ] Async implementation (wait for futures 1.0.0).
 
 ## License
-[Apache-2.0](./LICENSE)
+[MIT](./LICENSE-MIT) OR [Apache-2.0](./LICENSE-APACHE)
 
 [1]: https://img.shields.io/crates/v/random-access-memory.svg?style=flat-square
 [2]: https://crates.io/crate/random-access-memory
