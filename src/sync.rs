@@ -8,6 +8,7 @@ use std::cmp;
 pub struct Sync;
 impl Sync {
   /// Create a new instance.
+  #[cfg_attr(test, allow(new_ret_no_self))]
   pub fn new(page_size: usize) -> random_access::Sync<SyncMethods> {
     let methods = SyncMethods {
       buffers: Vec::new(),
@@ -37,7 +38,7 @@ impl Sync {
   ) -> random_access::Sync<SyncMethods> {
     let methods = SyncMethods {
       page_size,
-      buffers: buffers,
+      buffers,
       length: 0,
     };
 
@@ -74,7 +75,7 @@ impl random_access::SyncMethods for SyncMethods {
     let mut rel = offset - (i * self.page_size);
 
     // Iterate over data, write to buffers.
-    while data.len() > 0 {
+    while !data.is_empty() {
       let next = if (rel + data.len()) > self.page_size {
         &data[..(self.page_size - rel)]
       } else {
@@ -82,7 +83,7 @@ impl random_access::SyncMethods for SyncMethods {
       };
 
       // Allocate buffer if none matches
-      if let &None = &self.buffers.get(i) {
+      if self.buffers.get(i).is_none() {
         let buf = if (rel == 0) && (next.len() == self.page_size) {
           next.to_vec()
         } else {
@@ -101,9 +102,8 @@ impl random_access::SyncMethods for SyncMethods {
       // alternatively we could use the `unsafe`
       // `get_unchecked` method, but yeah nah.
       if let Some(buffer) = self.buffers.get_mut(i) {
-        for i in 0..next.len() {
-          let byte = next[i];
-          &buffer.push(byte);
+        for byte in next {
+          buffer.push(*byte);
         }
       }
 
@@ -128,14 +128,14 @@ impl random_access::SyncMethods for SyncMethods {
 
     while ptr < data.capacity() {
       let len = self.page_size - rel;
-      match &self.buffers.get(i) {
-        &Some(buf) => for i in ptr..buf.len() {
-          data.push(buf[i]);
+      match self.buffers.get(i) {
+        Some(buf) => for &byte in buf.iter().skip(ptr) {
+          data.push(byte);
         },
-        &None => {
+        None => {
           let max = cmp::min(data.capacity(), ptr + len);
-          for i in ptr..max {
-            data[i] = 0;
+          for _ in ptr..max {
+            data.push(0);
           }
         }
       }

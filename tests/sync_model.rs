@@ -2,8 +2,11 @@
 extern crate quickcheck;
 extern crate random_access_memory as ram;
 
+use self::Op::*;
 use quickcheck::{Arbitrary, Gen};
 use std::u8;
+
+const MAX_FILE_SIZE: usize = 5 * 10; // 5mb
 
 #[derive(Clone, Debug)]
 enum Op {
@@ -11,18 +14,14 @@ enum Op {
   Write { offset: usize, data: Vec<u8> },
 }
 
-use self::Op::*;
-const MAX_FILE_SIZE: usize = 5 * 10; // 5mb
-
 impl Arbitrary for Op {
   fn arbitrary<G: Gen>(g: &mut G) -> Self {
     let offset: usize = g.gen_range(0, MAX_FILE_SIZE);
     let length: usize = g.gen_range(0, MAX_FILE_SIZE / 3);
 
     if g.gen::<bool>() {
-      Op::Read { offset, length }
+      Read { offset, length }
     } else {
-      // TODO: randomize data even further. Unicode?
       let mut data = Vec::with_capacity(length);
       for _ in 0..length {
         data.push(u8::arbitrary(g));
