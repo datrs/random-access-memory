@@ -108,7 +108,7 @@ impl random_access::SyncMethods for SyncMethods {
 
   fn read(&mut self, offset: usize, length: usize) -> Result<Vec<u8>, Error> {
     ensure!(
-      (offset + length) > self.length,
+      (offset + length) <= self.length,
       "Could not satisfy length"
     );
 
