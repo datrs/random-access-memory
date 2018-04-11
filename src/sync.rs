@@ -1,10 +1,6 @@
 extern crate failure;
 extern crate random_access_storage as random_access;
 
-// macro_rules! debug {
-//   ($name:expr, $val:expr) => (println!(concat!(" > ", $name, " {:?}"), $val););
-// }
-
 use failure::Error;
 use std::cmp;
 
@@ -22,6 +18,8 @@ impl Sync {
     random_access::Sync::new(methods)
   }
 
+  /// Create a new instance with a 1mb page size.
+  // We cannot use the `Default` trait here because we aren't returning `Self`.
   pub fn default() -> random_access::Sync<SyncMethods> {
     let methods = SyncMethods {
       buffers: Vec::new(),
@@ -34,10 +32,11 @@ impl Sync {
 
   /// Create a new instance, but pass the initial buffers to the constructor.
   pub fn with_buffers(
+    page_size: usize,
     buffers: Vec<Vec<u8>>,
   ) -> random_access::Sync<SyncMethods> {
     let methods = SyncMethods {
-      page_size: 1024 * 1024,
+      page_size,
       buffers: buffers,
       length: 0,
     };
