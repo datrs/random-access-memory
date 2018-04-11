@@ -12,10 +12,20 @@ use std::cmp;
 pub struct Sync;
 impl Sync {
   /// Create a new instance.
-  pub fn new() -> random_access::Sync<SyncMethods> {
+  pub fn new(page_size: usize) -> random_access::Sync<SyncMethods> {
     let methods = SyncMethods {
-      page_size: 1024 * 1024,
       buffers: Vec::new(),
+      page_size,
+      length: 0,
+    };
+
+    random_access::Sync::new(methods)
+  }
+
+  pub fn default() -> random_access::Sync<SyncMethods> {
+    let methods = SyncMethods {
+      buffers: Vec::new(),
+      page_size: 1024 * 1024,
       length: 0,
     };
 

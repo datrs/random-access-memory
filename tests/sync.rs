@@ -6,26 +6,26 @@ use quickcheck::{Arbitrary, Gen};
 
 #[test]
 fn can_call_new() {
-  let _file = ram::Sync::new();
+  let _file = ram::Sync::default();
 }
 
 #[test]
 fn can_open_buffer() {
-  let mut file = ram::Sync::new();
+  let mut file = ram::Sync::default();
   file.write(0, b"hello").unwrap();
   assert!(file.opened);
 }
 
 #[test]
 fn can_write() {
-  let mut file = ram::Sync::new();
+  let mut file = ram::Sync::default();
   file.write(0, b"hello").unwrap();
   file.write(5, b" world").unwrap();
 }
 
 #[test]
 fn can_read() {
-  let mut file = ram::Sync::new();
+  let mut file = ram::Sync::default();
   file.write(0, b"hello").unwrap();
   file.write(5, b" world").unwrap();
   let text = file.read(0, 11).unwrap();
@@ -40,7 +40,7 @@ enum Op {
 }
 
 use self::Op::*;
-const MAX_FILE_SIZE: usize = 5 * 1024 * 1024; // 5mb
+const MAX_FILE_SIZE: usize = 5 * 10; // 5mb
 
 impl Arbitrary for Op {
   fn arbitrary<G: Gen>(g: &mut G) -> Self {
@@ -59,7 +59,7 @@ impl Arbitrary for Op {
 
 quickcheck! {
   fn implementation_matches_model(ops: Vec<Op>) -> bool {
-    let mut implementation = ram::Sync::new();
+    let mut implementation = ram::Sync::new(10);
     let mut model = vec![];
 
     for op in ops {
@@ -72,7 +72,7 @@ quickcheck! {
               &model[offset..end]
             );
           } else {
-            assert!(implementation.read(offset, length).is_error());
+            assert!(implementation.read(offset, length).is_err());
           }
         },
         Write { offset, ref data } => {
