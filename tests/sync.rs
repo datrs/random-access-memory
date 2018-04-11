@@ -39,6 +39,14 @@ enum Op {
   Write { offset: usize, data: Vec<u8> },
 }
 
+#[test]
+fn regress_1() {
+  let mut file = ram::Sync::new(50);
+  file.write(30, &[30]).unwrap();
+  file.read(15, 15).unwrap();
+  assert!(file.opened);
+}
+
 use self::Op::*;
 const MAX_FILE_SIZE: usize = 5 * 10; // 5mb
 
