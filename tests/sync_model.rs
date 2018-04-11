@@ -3,6 +3,7 @@ extern crate quickcheck;
 extern crate random_access_memory as ram;
 
 use quickcheck::{Arbitrary, Gen};
+use std::u8;
 
 #[derive(Clone, Debug)]
 enum Op {
@@ -22,7 +23,10 @@ impl Arbitrary for Op {
       Op::Read { offset, length }
     } else {
       // TODO: randomize data even further. Unicode?
-      let data = vec![offset as u8; length];
+      let mut data = Vec::with_capacity(length);
+      for _ in 0..length {
+        data.push(u8::arbitrary(g));
+      }
       Write { offset, data }
     }
   }
