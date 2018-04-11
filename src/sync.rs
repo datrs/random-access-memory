@@ -87,7 +87,7 @@ impl random_access::SyncMethods for SyncMethods {
         let buf = if (rel == 0) && (next.len() == self.page_size) {
           next.to_vec()
         } else {
-          calloc(self.page_size)
+          Vec::with_capacity(self.page_size)
         };
 
         // Grow self.buffers if needed.
@@ -170,9 +170,4 @@ impl random_access::SyncMethods for SyncMethods {
 
     Ok(())
   }
-}
-
-#[inline]
-fn calloc(len: usize) -> Vec<u8> {
-  Vec::with_capacity(len)
 }
