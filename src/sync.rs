@@ -121,7 +121,7 @@ impl random_access::SyncMethods for SyncMethods {
       "Could not satisfy length"
     );
 
-    let mut data = Vec::with_capacity(length);
+    let mut data = vec![0; length];
     let mut ptr = 0;
     let mut i = offset / self.page_size;
     let mut rel = offset - (i / self.page_size);
@@ -134,8 +134,8 @@ impl random_access::SyncMethods for SyncMethods {
         },
         None => {
           let max = cmp::min(data.capacity(), ptr + len);
-          for _ in ptr..max {
-            data.push(0);
+          for i in ptr..max {
+            data[i] = 0;
           }
         }
       }

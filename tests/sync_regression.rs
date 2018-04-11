@@ -20,7 +20,16 @@ fn regress_2() {
 
   let mut file = ram::Sync::new(50);
   file.write(48, &[48, 48, 48, 48]).unwrap();
-  file.read(39, 9).unwrap();
+  let buf = file.read(39, 9).unwrap();
+  assert_eq!(buf, vec![0, 0, 0, 0, 0, 0, 0, 0, 48]);
+  assert!(file.opened);
+
+  let mut file = ram::Sync::new(50);
+  file
+    .write(45, &[56, 46, 14, 93, 15, 54, 2])
+    .unwrap();
+  let buf = file.read(42, 10).unwrap();
+  assert_eq!(buf, vec![0, 0, 0, 56, 46, 14, 93, 15, 54, 2]);
   assert!(file.opened);
 }
 
