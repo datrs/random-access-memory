@@ -130,7 +130,7 @@ impl random_access::SyncMethods for SyncMethods {
       let len = self.page_size - rel;
       match &self.buffers.get(i) {
         &Some(buf) => for i in ptr..buf.len() {
-          data.push(buf[rel + i]);
+          data.push(buf[i]);
         },
         &None => {
           let max = cmp::min(data.capacity(), ptr + len);
