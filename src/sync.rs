@@ -66,7 +66,7 @@ impl random_access::SyncMethods for SyncMethods {
     Ok(())
   }
 
-  fn write(&mut self, offset: usize, mut data: &[u8]) -> Result<(), Error> {
+  fn write(&mut self, offset: usize, data: &[u8]) -> Result<(), Error> {
     let new_len = offset + data.len();
     if new_len > self.length {
       self.length = new_len;
@@ -74,16 +74,15 @@ impl random_access::SyncMethods for SyncMethods {
 
     let mut page_num = offset / self.page_size;
     let mut page_cursor = offset - (page_num * self.page_size);
+    let mut data_cursor = 0;
 
     // Iterate over data, write to buffers. Subslice if the data is bigger than
     // what we can write in a single go.
-    while !data.is_empty() {
+    while data_cursor < data.len() {
       let upper_bound = cmp::min(self.page_size, page_cursor + data.len());
-      let next = if upper_bound > self.page_size {
-        &data[..(self.page_size - page_cursor)]
-      } else {
-        data
-      };
+      let range = page_cursor..upper_bound;
+
+      println!("range: {:?}", range);
 
       // Allocate buffer if needed. Either append a new buffer to the end, or
       // set a buffer in the center.
@@ -96,26 +95,15 @@ impl random_access::SyncMethods for SyncMethods {
         }
       }
 
-      // NOTE: we need to match Some in this case,
-      // alternatively we could use the `unsafe`
-      // `get_unchecked` method, but yeah nah.
-      if let Some(buffer) = self.buffers.get_mut(page_num) {
-        // println!(
-        //   "range {:?}..{:?} {:?} {:?}",
-        //   page_cursor,
-        //   upper_bound,
-        //   buffer.len(),
-        //   next.len()
-        // );
-        for (index, buf_index) in (page_cursor..upper_bound).enumerate() {
-          // println!("index {:?} {:?}", index, buf_index);
-          buffer[buf_index] = next[index];
-        }
+      // Copy data from the vec slice. This should always succeed.
+      let buffer = self.buffers.get_mut(page_num).unwrap();
+      for (index, buf_index) in range.enumerate() {
+        buffer[buf_index] = data[index];
       }
 
       page_num += 1;
       page_cursor = 0;
-      data = &data[next.len()..];
+      data_cursor += upper_bound;
     }
 
     Ok(())
