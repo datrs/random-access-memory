@@ -54,6 +54,7 @@ pub struct SyncMethods {
   pub page_size: usize,
 
   /// The memory we read/write to.
+  // TODO: initialize as a sparse vector.
   pub buffers: Vec<Vec<u8>>,
 
   /// Total length of the data.
@@ -65,50 +66,55 @@ impl random_access::SyncMethods for SyncMethods {
     Ok(())
   }
 
-  fn write(&mut self, offset: usize, data: &[u8]) -> Result<(), Error> {
-    if (offset + data.len()) > self.length {
-      self.length = offset + data.len();
+  fn write(&mut self, offset: usize, mut data: &[u8]) -> Result<(), Error> {
+    let new_len = offset + data.len();
+    if new_len > self.length {
+      self.length = new_len;
     }
 
-    let mut data = data;
-    let mut i = offset / self.page_size;
-    let mut rel = offset - (i * self.page_size);
+    let mut page_num = offset / self.page_size;
+    let mut page_cursor = offset - (page_num * self.page_size);
 
-    // Iterate over data, write to buffers.
+    // Iterate over data, write to buffers. Subslice if the data is bigger than
+    // what we can write in a single go.
     while !data.is_empty() {
-      let next = if (rel + data.len()) > self.page_size {
-        &data[..(self.page_size - rel)]
+      let upper_bound = cmp::min(self.page_size, page_cursor + data.len());
+      let next = if upper_bound > self.page_size {
+        &data[..(self.page_size - page_cursor)]
       } else {
         data
       };
 
-      // Allocate buffer if none matches
-      if self.buffers.get(i).is_none() {
-        let buf = if (rel == 0) && (next.len() == self.page_size) {
-          next.to_vec()
+      // Allocate buffer if needed. Either append a new buffer to the end, or
+      // set a buffer in the center.
+      if self.buffers.get(page_num).is_none() {
+        let buf = vec![0; self.page_size];
+        if self.buffers.len() < page_num + 1 {
+          self.buffers.resize(page_num + 1, buf);
         } else {
-          Vec::with_capacity(self.page_size)
-        };
-
-        // Grow self.buffers if needed.
-        if self.buffers.len() < i + 1 {
-          self.buffers.resize(i + 1, buf);
-        } else {
-          self.buffers[i] = buf;
+          self.buffers[page_num] = buf;
         }
       }
 
       // NOTE: we need to match Some in this case,
       // alternatively we could use the `unsafe`
       // `get_unchecked` method, but yeah nah.
-      if let Some(buffer) = self.buffers.get_mut(i) {
-        for byte in next {
-          buffer.push(*byte);
+      if let Some(buffer) = self.buffers.get_mut(page_num) {
+        // println!(
+        //   "range {:?}..{:?} {:?} {:?}",
+        //   page_cursor,
+        //   upper_bound,
+        //   buffer.len(),
+        //   next.len()
+        // );
+        for (index, buf_index) in (page_cursor..upper_bound).enumerate() {
+          // println!("index {:?} {:?}", index, buf_index);
+          buffer[buf_index] = next[index];
         }
       }
 
-      i += 1;
-      rel = 0;
+      page_num += 1;
+      page_cursor = 0;
       data = &data[next.len()..];
     }
 
@@ -121,31 +127,41 @@ impl random_access::SyncMethods for SyncMethods {
       "Could not satisfy length"
     );
 
-    let mut data = vec![0; length];
-    let mut ptr = 0;
-    let mut i = offset / self.page_size;
-    let mut rel = offset - (i / self.page_size);
+    let mut page_num = offset / self.page_size;
+    let mut page_cursor = offset - (page_num / self.page_size);
 
-    while ptr < data.capacity() {
-      let len = self.page_size - rel;
-      match self.buffers.get(i) {
-        Some(buf) => for &byte in buf.iter().skip(ptr) {
-          data.push(byte);
-        },
+    let res_capacity = length;
+    let mut res_buf = vec![0; length];
+    let mut res_cursor = 0; // Keep track we read the right amount of bytes.
+
+    while res_cursor < res_capacity {
+      let res_bound = res_capacity - res_cursor;
+      let page_bound = self.page_size - page_cursor;
+      let relative_bound = cmp::min(res_bound, page_bound);
+      let upper_bound = page_cursor + relative_bound;
+      let range = page_cursor..upper_bound;
+
+      // Fill until either we're done reading the page, or we're done
+      // filling the buffer. Whichever arrives sooner.
+      match self.buffers.get(page_num) {
+        Some(buf) => {
+          for (index, buf_index) in range.enumerate() {
+            res_buf[res_cursor + index] = buf[buf_index];
+          }
+        }
         None => {
-          let max = cmp::min(data.capacity(), ptr + len);
-          for i in ptr..max {
-            data[i] = 0;
+          for (index, _) in range.enumerate() {
+            res_buf[res_cursor + index] = 0;
           }
         }
       }
 
-      ptr += len;
-      i += 1;
-      rel = 0;
+      res_cursor += relative_bound;
+      page_num += 1;
+      page_cursor = 0;
     }
 
-    Ok(data)
+    Ok(res_buf)
   }
 
   fn del(&mut self, offset: usize, length: usize) -> Result<(), Error> {
