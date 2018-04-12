@@ -11,9 +11,9 @@ Continuously read,write to memory using random offsets and lengths.
 ```rust
 extern crate random_access_memory as ram;
 
-let mut file = ram::Sync::new();
+let mut file = ram::Sync::default();
 file.write(0, b"hello").unwrap();
-file.write(5, b" world".unwrap();
+file.write(5, b" world").unwrap();
 let text = file.read(0, 11).unwrap();
 assert_eq!(text, b"hello world");
 ```

@@ -40,3 +40,14 @@ fn regress_3() {
   assert_eq!(buf, vec![0, 0, 0, 56, 46, 14, 93, 15, 54, 2]);
   assert!(file.opened);
 }
+
+#[test]
+// Postmortem: we were having trouble when we were reading with an index that's
+// larger than the page size. Turned out we weren't doing some math properly,
+// which caused a cursor to jump.
+fn regress_4() {
+  let mut file = ram::Sync::new(10);
+  file.write(44, &[54, 59]).unwrap();
+  file.read(13, 3).unwrap();
+  assert!(file.opened);
+}

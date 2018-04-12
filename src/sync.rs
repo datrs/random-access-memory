@@ -95,8 +95,10 @@ impl random_access::SyncMethods for SyncMethods {
         }
       }
 
-      // Copy data from the vec slice. This should always succeed.
-      let buffer = self.buffers.get_mut(page_num).unwrap();
+      // Copy data from the vec slice.
+      // TODO: use a batch operation such as `.copy_from_slice()` so it can be
+      // optimized.
+      let buffer = &mut self.buffers[page_num];
       for (index, buf_index) in range.enumerate() {
         buffer[buf_index] = data[data_cursor + index];
       }
@@ -116,11 +118,11 @@ impl random_access::SyncMethods for SyncMethods {
     );
 
     let mut page_num = offset / self.page_size;
-    let mut page_cursor = offset - (page_num / self.page_size);
+    let mut page_cursor = offset - (page_num * self.page_size);
 
-    let res_capacity = length;
     let mut res_buf = vec![0; length];
     let mut res_cursor = 0; // Keep track we read the right amount of bytes.
+    let res_capacity = length;
 
     while res_cursor < res_capacity {
       let res_bound = res_capacity - res_cursor;

@@ -42,7 +42,7 @@ quickcheck! {
           let end = offset + length;
           if model.len() >= end {
             assert_eq!(
-              &*implementation.read(offset, length).unwrap(),
+              &*implementation.read(offset, length).expect("Reads should be successful."),
               &model[offset..end]
             );
           } else {
@@ -54,7 +54,7 @@ quickcheck! {
           if model.len() < end {
             model.resize(end, 0);
           }
-          implementation.write(offset, &*data).unwrap();
+          implementation.write(offset, &*data).expect("Writes should be successful.");
           model[offset..end].copy_from_slice(data);
         },
       }
