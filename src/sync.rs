@@ -79,10 +79,10 @@ impl random_access::SyncMethods for SyncMethods {
     // Iterate over data, write to buffers. Subslice if the data is bigger than
     // what we can write in a single go.
     while data_cursor < data.len() {
-      let upper_bound = cmp::min(self.page_size, page_cursor + data.len());
+      let data_bound = data.len() - data_cursor;
+      let upper_bound = cmp::min(self.page_size, page_cursor + data_bound);
       let range = page_cursor..upper_bound;
-
-      println!("range: {:?}", range);
+      let range_len = range.len();
 
       // Allocate buffer if needed. Either append a new buffer to the end, or
       // set a buffer in the center.
@@ -98,12 +98,12 @@ impl random_access::SyncMethods for SyncMethods {
       // Copy data from the vec slice. This should always succeed.
       let buffer = self.buffers.get_mut(page_num).unwrap();
       for (index, buf_index) in range.enumerate() {
-        buffer[buf_index] = data[index];
+        buffer[buf_index] = data[data_cursor + index];
       }
 
       page_num += 1;
       page_cursor = 0;
-      data_cursor += upper_bound;
+      data_cursor += range_len;
     }
 
     Ok(())
