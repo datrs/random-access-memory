@@ -9,7 +9,7 @@ mod sync {
   #[bench]
   fn write_hello_world(b: &mut Bencher) {
     b.iter(|| {
-      let mut file = ram::Sync::new();
+      let mut file = ram::Sync::default();
       file.write(0, b"hello").unwrap();
       file.write(5, b" world").unwrap();
     });
@@ -17,7 +17,7 @@ mod sync {
 
   #[bench]
   fn read_hello_world(b: &mut Bencher) {
-    let mut file = ram::Sync::new();
+    let mut file = ram::Sync::default();
     file.write(0, b"hello").unwrap();
     file.write(5, b" world").unwrap();
     b.iter(|| {
@@ -28,7 +28,7 @@ mod sync {
   #[bench]
   fn read_write_hello_world(b: &mut Bencher) {
     b.iter(|| {
-      let mut file = ram::Sync::new();
+      let mut file = ram::Sync::default();
       file.write(0, b"hello").unwrap();
       file.write(5, b" world").unwrap();
       let _text = file.read(0, 11).unwrap();
