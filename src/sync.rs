@@ -5,10 +5,12 @@ use failure::Error;
 use std::cmp;
 
 /// Main constructor.
+#[derive(Debug)]
 pub struct Sync;
+
 impl Sync {
   /// Create a new instance.
-  #[cfg_attr(test, allow(new_ret_no_self))]
+  // #[cfg_attr(test, allow(new_ret_no_self))]
   pub fn new(page_size: usize) -> random_access::Sync<SyncMethods> {
     let methods = SyncMethods {
       buffers: Vec::new(),
@@ -49,6 +51,7 @@ impl Sync {
 /// Methods that have been implemented to provide synchronous access to memory
 /// buffers. These should generally be kept private, but exposed to prevent
 /// leaking internals.
+#[derive(Debug)]
 pub struct SyncMethods {
   /// The length length of each buffer.
   pub page_size: usize,
