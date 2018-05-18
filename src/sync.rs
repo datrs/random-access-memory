@@ -117,7 +117,8 @@ impl random_access::SyncMethods for SyncMethods {
   fn read(&mut self, offset: usize, length: usize) -> Result<Vec<u8>, Error> {
     ensure!(
       (offset + length) <= self.length,
-      "Could not satisfy length"
+      format!("Read bounds exceeded. {} < {}..{}",
+              self.length, offset, offset + length)
     );
 
     let mut page_num = offset / self.page_size;
