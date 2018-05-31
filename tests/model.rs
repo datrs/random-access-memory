@@ -33,7 +33,7 @@ impl Arbitrary for Op {
 
 quickcheck! {
   fn implementation_matches_model(ops: Vec<Op>) -> bool {
-    let mut implementation = ram::Sync::new(10);
+    let mut implementation = ram::RandomAccessMemory::new(10);
     let mut model = vec![];
 
     for op in ops {
