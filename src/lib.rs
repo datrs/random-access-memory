@@ -7,8 +7,8 @@
 extern crate failure;
 extern crate random_access_storage;
 
-use random_access_storage::{RandomAccess, RandomAccessMethods};
 use failure::Error;
+use random_access_storage::{RandomAccess, RandomAccessMethods};
 use std::cmp;
 
 /// Main constructor.
@@ -72,11 +72,12 @@ pub struct RandomAccessMemoryMethods {
 }
 
 impl RandomAccessMethods for RandomAccessMemoryMethods {
-  fn open(&mut self) -> Result<(), Error> {
+  type Error = Error;
+  fn open(&mut self) -> Result<(), Self::Error> {
     Ok(())
   }
 
-  fn write(&mut self, offset: usize, data: &[u8]) -> Result<(), Error> {
+  fn write(&mut self, offset: usize, data: &[u8]) -> Result<(), Self::Error> {
     let new_len = offset + data.len();
     if new_len > self.length {
       self.length = new_len;
@@ -121,11 +122,19 @@ impl RandomAccessMethods for RandomAccessMemoryMethods {
     Ok(())
   }
 
-  fn read(&mut self, offset: usize, length: usize) -> Result<Vec<u8>, Error> {
+  fn read(
+    &mut self,
+    offset: usize,
+    length: usize,
+  ) -> Result<Vec<u8>, Self::Error> {
     ensure!(
       (offset + length) <= self.length,
-      format!("Read bounds exceeded. {} < {}..{}",
-              self.length, offset, offset + length)
+      format!(
+        "Read bounds exceeded. {} < {}..{}",
+        self.length,
+        offset,
+        offset + length
+      )
     );
 
     let mut page_num = offset / self.page_size;
@@ -165,7 +174,7 @@ impl RandomAccessMethods for RandomAccessMemoryMethods {
     Ok(res_buf)
   }
 
-  fn del(&mut self, offset: usize, length: usize) -> Result<(), Error> {
+  fn del(&mut self, offset: usize, length: usize) -> Result<(), Self::Error> {
     let overflow = offset % self.page_size;
     let inc = match overflow {
       0 => 0,

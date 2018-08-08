@@ -33,9 +33,7 @@ fn regress_2() {
 // ahead of time. Also simplified our allocation logic.
 fn regress_3() {
   let mut file = ram::RandomAccessMemory::new(50);
-  file
-    .write(45, &[56, 46, 14, 93, 15, 54, 2])
-    .unwrap();
+  file.write(45, &[56, 46, 14, 93, 15, 54, 2]).unwrap();
   let buf = file.read(42, 10).unwrap();
   assert_eq!(buf, vec![0, 0, 0, 56, 46, 14, 93, 15, 54, 2]);
   assert!(file.opened);
