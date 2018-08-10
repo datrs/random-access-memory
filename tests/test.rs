@@ -1,4 +1,7 @@
 extern crate random_access_memory as ram;
+extern crate random_access_storage;
+
+use random_access_storage::RandomAccess;
 
 #[test]
 fn can_call_new() {
@@ -9,7 +12,6 @@ fn can_call_new() {
 fn can_open_buffer() {
   let mut file = ram::RandomAccessMemory::default();
   file.write(0, b"hello").unwrap();
-  assert!(file.opened);
 }
 
 #[test]

@@ -1,9 +1,11 @@
 #[macro_use]
 extern crate quickcheck;
 extern crate random_access_memory as ram;
+extern crate random_access_storage;
 
 use self::Op::*;
 use quickcheck::{Arbitrary, Gen};
+use random_access_storage::RandomAccess;
 use std::u8;
 
 const MAX_FILE_SIZE: usize = 5 * 10; // 5mb
