@@ -17,7 +17,7 @@ pub struct RandomAccessMemory;
 
 impl RandomAccessMemory {
   /// Create a new instance.
-  // #[cfg_attr(test, allow(new_ret_no_self))]
+  #[cfg_attr(feature = "cargo-clippy", allow(new_ret_no_self))]
   pub fn new(page_size: usize) -> RandomAccess<RandomAccessMemoryMethods> {
     let methods = RandomAccessMemoryMethods {
       buffers: Vec::new(),
