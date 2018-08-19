@@ -7,6 +7,8 @@
 extern crate failure;
 extern crate random_access_storage;
 
+pub mod foob;
+
 use failure::Error;
 use random_access_storage::{RandomAccess, RandomAccessMethods};
 use std::cmp;
