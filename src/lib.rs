@@ -8,74 +8,57 @@ extern crate failure;
 extern crate random_access_storage;
 
 use failure::Error;
-use random_access_storage::{RandomAccess, RandomAccessMethods};
+use random_access_storage::RandomAccess;
 use std::cmp;
+use std::io;
 
 /// Main constructor.
 #[derive(Debug)]
-pub struct RandomAccessMemory;
-
-impl RandomAccessMemory {
-  /// Create a new instance.
-  // #[cfg_attr(test, allow(new_ret_no_self))]
-  pub fn new(page_size: usize) -> RandomAccess<RandomAccessMemoryMethods> {
-    let methods = RandomAccessMemoryMethods {
-      buffers: Vec::new(),
-      page_size,
-      length: 0,
-    };
-
-    RandomAccess::new(methods)
-  }
-
-  /// Create a new instance with a 1mb page size.
-  // We cannot use the `Default` trait here because we aren't returning `Self`.
-  pub fn default() -> RandomAccess<RandomAccessMemoryMethods> {
-    let methods = RandomAccessMemoryMethods {
-      buffers: Vec::new(),
-      page_size: 1024 * 1024,
-      length: 0,
-    };
-
-    RandomAccess::new(methods)
-  }
-
-  /// Create a new instance, but pass the initial buffers to the constructor.
-  pub fn with_buffers(
-    page_size: usize,
-    buffers: Vec<Vec<u8>>,
-  ) -> RandomAccess<RandomAccessMemoryMethods> {
-    let methods = RandomAccessMemoryMethods {
-      page_size,
-      buffers,
-      length: 0,
-    };
-
-    RandomAccess::new(methods)
-  }
-}
-
-/// Methods that have been implemented to provide synchronous access to memory
-/// buffers. These should generally be kept private, but exposed to prevent
-/// leaking internals.
-#[derive(Debug)]
-pub struct RandomAccessMemoryMethods {
+pub struct RandomAccessMemory {
   /// The length length of each buffer.
-  pub page_size: usize,
+  page_size: usize,
 
   /// The memory we read/write to.
   // TODO: initialize as a sparse vector.
-  pub buffers: Vec<Vec<u8>>,
+  buffers: Vec<Vec<u8>>,
 
   /// Total length of the data.
   length: usize,
 }
 
-impl RandomAccessMethods for RandomAccessMemoryMethods {
-  type Error = Error;
-  fn open(&mut self) -> Result<(), Self::Error> {
-    Ok(())
+impl RandomAccessMemory {
+  /// Create a new instance.
+  #[cfg_attr(feature = "cargo-clippy", allow(new_ret_no_self))]
+  pub fn new(page_size: usize) -> Self {
+    RandomAccessMemory {
+      buffers: Vec::new(),
+      page_size,
+      length: 0,
+    }
   }
+
+  /// Create a new instance with a 1mb page size.
+  // We cannot use the `Default` trait here because we aren't returning `Self`.
+  pub fn default() -> Self {
+    RandomAccessMemory {
+      buffers: Vec::new(),
+      page_size: 1024 * 1024,
+      length: 0,
+    }
+  }
+
+  /// Create a new instance, but pass the initial buffers to the constructor.
+  pub fn with_buffers(page_size: usize, buffers: Vec<Vec<u8>>) -> Self {
+    RandomAccessMemory {
+      page_size,
+      buffers,
+      length: 0,
+    }
+  }
+}
+
+impl RandomAccess for RandomAccessMemory {
+  type Error = Error;
 
   fn write(&mut self, offset: usize, data: &[u8]) -> Result<(), Self::Error> {
     let new_len = offset + data.len();
@@ -172,6 +155,15 @@ impl RandomAccessMethods for RandomAccessMemoryMethods {
     }
 
     Ok(res_buf)
+  }
+
+  fn read_to_writer(
+    &mut self,
+    _offset: usize,
+    _length: usize,
+    _buf: &mut impl io::Write,
+  ) -> Result<(), Self::Error> {
+    unimplemented!()
   }
 
   fn del(&mut self, offset: usize, length: usize) -> Result<(), Self::Error> {

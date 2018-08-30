@@ -1,4 +1,7 @@
 extern crate random_access_memory as ram;
+extern crate random_access_storage;
+
+use random_access_storage::RandomAccess;
 
 #[test]
 // Postmortem: looks like we were reading out of bounds by accidentally
@@ -7,7 +10,6 @@ fn regress_1() {
   let mut file = ram::RandomAccessMemory::new(50);
   file.write(30, &[30]).unwrap();
   file.read(15, 15).unwrap();
-  assert!(file.opened);
 }
 
 #[test]
@@ -18,13 +20,11 @@ fn regress_2() {
   file.write(22, &[22, 22, 22, 22]).unwrap();
   let buf = file.read(1, 4).unwrap();
   assert_eq!(buf, vec![0, 0, 0, 0]);
-  assert!(file.opened);
 
   let mut file = ram::RandomAccessMemory::new(50);
   file.write(48, &[48, 48, 48, 48]).unwrap();
   let buf = file.read(39, 9).unwrap();
   assert_eq!(buf, vec![0, 0, 0, 0, 0, 0, 0, 0, 0]);
-  assert!(file.opened);
 }
 
 #[test]
@@ -36,7 +36,6 @@ fn regress_3() {
   file.write(45, &[56, 46, 14, 93, 15, 54, 2]).unwrap();
   let buf = file.read(42, 10).unwrap();
   assert_eq!(buf, vec![0, 0, 0, 56, 46, 14, 93, 15, 54, 2]);
-  assert!(file.opened);
 }
 
 #[test]
@@ -47,5 +46,4 @@ fn regress_4() {
   let mut file = ram::RandomAccessMemory::new(10);
   file.write(44, &[54, 59]).unwrap();
   file.read(13, 3).unwrap();
-  assert!(file.opened);
 }
