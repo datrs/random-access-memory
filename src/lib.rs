@@ -188,4 +188,16 @@ impl RandomAccess for RandomAccessMemory {
 
     Ok(())
   }
+
+  fn truncate(&mut self, _length: usize) -> Result<(), Self::Error> {
+    unimplemented!()
+  }
+
+  fn len(&mut self) -> Result<usize, Self::Error> {
+    Ok(self.length)
+  }
+
+  fn is_empty(&mut self) -> Result<bool, Self::Error> {
+    Ok(self.length == 0)
+  }
 }

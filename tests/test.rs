@@ -30,3 +30,21 @@ fn can_read() {
   let text = String::from_utf8(text.to_vec()).unwrap();
   assert_eq!(text, "hello world");
 }
+
+#[test]
+fn can_len() {
+  let mut file = ram::RandomAccessMemory::default();
+  assert_eq!(file.len().unwrap(), 0);
+  file.write(0, b"hello").unwrap();
+  assert_eq!(file.len().unwrap(), 5);
+  file.write(5, b" world").unwrap();
+  assert_eq!(file.len().unwrap(), 11);
+}
+
+#[test]
+fn can_is_empty() {
+  let mut file = ram::RandomAccessMemory::default();
+  assert_eq!(file.is_empty().unwrap(), true);
+  file.write(0, b"hello").unwrap();
+  assert_eq!(file.is_empty().unwrap(), false);
+}
