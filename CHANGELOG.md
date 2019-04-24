@@ -1,3 +1,25 @@
+## 2019-04-24, Version 1.0.0
+### Commits
+- [[`a7ff8ea564`](https://github.com/datrs/random-access-memory/commit/a7ff8ea564f11673b3e39d605befe9b25fc58574)] (cargo-release) version 1.0.0 (Yoshua Wuyts)
+- [[`76c0ebfe1b`](https://github.com/datrs/random-access-memory/commit/76c0ebfe1ba046871430f03fe5876a4e27554fb6)] Update random-access-storage to 2.0.0 (#12) (Jack Jennings)
+- [[`defaf55071`](https://github.com/datrs/random-access-memory/commit/defaf55071de68206eada89a74616d26603e2faa)] Update quickcheck requirement from 0.7.1 to 0.8.1 (dependabot[bot])
+- [[`42023a8700`](https://github.com/datrs/random-access-memory/commit/42023a870050fdbc196c6f7d2ffd3e7c36797fac)] Update rand requirement from 0.5.5 to 0.6.0 (dependabot[bot])
+- [[`9202fe0308`](https://github.com/datrs/random-access-memory/commit/9202fe0308151dce780c7721f533bed2e11f7f3c)] Update quickcheck requirement from 0.6.2 to 0.7.1 (#6) (dependabot[bot])
+- [[`eae681682e`](https://github.com/datrs/random-access-memory/commit/eae681682eef6a4fe888f25b8728951873b6f114)] Run clippy on travis (#5) (Szabolcs Berecz)
+- [[`df0755085c`](https://github.com/datrs/random-access-memory/commit/df0755085c1e472b084f9598aaa2ac0d4fb04f10)] update changelog (Yoshua Wuyts)
+
+### Stats
+```diff
+ .travis.yml    |  4 +++-
+ CHANGELOG.md   | 20 ++++++++++++++++++++
+ Cargo.toml     |  7 ++++---
+ src/lib.rs     | 12 ++++++++++++
+ tests/model.rs |  2 ++
+ tests/test.rs  | 18 ++++++++++++++++++
+ 6 files changed, 59 insertions(+), 4 deletions(-)
+```
+
+
 ## 2018-08-30, Version 0.5.0
 ### Commits
 - [[`3baa7c2d23`](https://github.com/datrs/random-access-memory/commits/3baa7c2d23dfa774ac5e1d2b38bbb171eaf95bc0)] (cargo-release) version 0.5.0 (Yoshua Wuyts)
