@@ -16,20 +16,19 @@ use std::io;
 #[derive(Debug)]
 pub struct RandomAccessMemory {
   /// The length length of each buffer.
-  page_size: usize,
+  page_size: u64,
 
   /// The memory we read/write to.
   // TODO: initialize as a sparse vector.
   buffers: Vec<Vec<u8>>,
 
   /// Total length of the data.
-  length: usize,
+  length: u64,
 }
 
 impl RandomAccessMemory {
   /// Create a new instance.
-  #[cfg_attr(feature = "cargo-clippy", allow(new_ret_no_self))]
-  pub fn new(page_size: usize) -> Self {
+  pub fn new(page_size: u64) -> Self {
     RandomAccessMemory {
       buffers: Vec::new(),
       page_size,
@@ -48,7 +47,7 @@ impl RandomAccessMemory {
   }
 
   /// Create a new instance, but pass the initial buffers to the constructor.
-  pub fn with_buffers(page_size: usize, buffers: Vec<Vec<u8>>) -> Self {
+  pub fn with_buffers(page_size: u64, buffers: Vec<Vec<u8>>) -> Self {
     RandomAccessMemory {
       page_size,
       buffers,
@@ -60,8 +59,8 @@ impl RandomAccessMemory {
 impl RandomAccess for RandomAccessMemory {
   type Error = Error;
 
-  fn write(&mut self, offset: usize, data: &[u8]) -> Result<(), Self::Error> {
-    let new_len = offset + data.len();
+  fn write(&mut self, offset: u64, data: &[u8]) -> Result<(), Self::Error> {
+    let new_len = offset + data.len() as u64;
     if new_len > self.length {
       self.length = new_len;
     }
@@ -73,28 +72,28 @@ impl RandomAccess for RandomAccessMemory {
     // Iterate over data, write to buffers. Subslice if the data is bigger than
     // what we can write in a single go.
     while data_cursor < data.len() {
-      let data_bound = data.len() - data_cursor;
+      let data_bound = (data.len() - data_cursor) as u64;
       let upper_bound = cmp::min(self.page_size, page_cursor + data_bound);
       let range = page_cursor..upper_bound;
-      let range_len = range.len();
+      let range_len = (page_cursor as usize..upper_bound as usize).len();
 
       // Allocate buffer if needed. Either append a new buffer to the end, or
       // set a buffer in the center.
-      if self.buffers.get(page_num).is_none() {
-        let buf = vec![0; self.page_size];
-        if self.buffers.len() < page_num + 1 {
-          self.buffers.resize(page_num + 1, buf);
+      if self.buffers.get(page_num as usize).is_none() {
+        let buf = vec![0; self.page_size as usize];
+        if (self.buffers.len() as u64) < page_num + 1 {
+          self.buffers.resize((page_num + 1) as usize, buf);
         } else {
-          self.buffers[page_num] = buf;
+          self.buffers[page_num as usize] = buf;
         }
       }
 
       // Copy data from the vec slice.
       // TODO: use a batch operation such as `.copy_from_slice()` so it can be
       // optimized.
-      let buffer = &mut self.buffers[page_num];
+      let buffer = &mut self.buffers[page_num as usize];
       for (index, buf_index) in range.enumerate() {
-        buffer[buf_index] = data[data_cursor + index];
+        buffer[buf_index as usize] = data[data_cursor + index];
       }
 
       page_num += 1;
@@ -105,11 +104,11 @@ impl RandomAccess for RandomAccessMemory {
     Ok(())
   }
 
-  fn read(
-    &mut self,
-    offset: usize,
-    length: usize,
-  ) -> Result<Vec<u8>, Self::Error> {
+  fn sync_all(&mut self) -> Result<(), Self::Error> {
+    Ok(())
+  }
+
+  fn read(&mut self, offset: u64, length: u64) -> Result<Vec<u8>, Self::Error> {
     ensure!(
       (offset + length) <= self.length,
       format!(
@@ -123,7 +122,7 @@ impl RandomAccess for RandomAccessMemory {
     let mut page_num = offset / self.page_size;
     let mut page_cursor = offset - (page_num * self.page_size);
 
-    let mut res_buf = vec![0; length];
+    let mut res_buf = vec![0; length as usize];
     let mut res_cursor = 0; // Keep track we read the right amount of bytes.
     let res_capacity = length;
 
@@ -136,15 +135,15 @@ impl RandomAccess for RandomAccessMemory {
 
       // Fill until either we're done reading the page, or we're done
       // filling the buffer. Whichever arrives sooner.
-      match self.buffers.get(page_num) {
+      match self.buffers.get(page_num as usize) {
         Some(buf) => {
           for (index, buf_index) in range.enumerate() {
-            res_buf[res_cursor + index] = buf[buf_index];
+            res_buf[res_cursor as usize + index] = buf[buf_index as usize];
           }
         }
         None => {
           for (index, _) in range.enumerate() {
-            res_buf[res_cursor + index] = 0;
+            res_buf[res_cursor as usize + index] = 0;
           }
         }
       }
@@ -159,14 +158,14 @@ impl RandomAccess for RandomAccessMemory {
 
   fn read_to_writer(
     &mut self,
-    _offset: usize,
-    _length: usize,
+    _offset: u64,
+    _length: u64,
     _buf: &mut impl io::Write,
   ) -> Result<(), Self::Error> {
     unimplemented!()
   }
 
-  fn del(&mut self, offset: usize, length: usize) -> Result<(), Self::Error> {
+  fn del(&mut self, offset: u64, length: u64) -> Result<(), Self::Error> {
     let overflow = offset % self.page_size;
     let inc = match overflow {
       0 => 0,
@@ -179,8 +178,10 @@ impl RandomAccess for RandomAccessMemory {
       let end = offset + length;
       let mut i = offset - self.page_size;
 
-      while (offset + self.page_size <= end) && i < self.buffers.capacity() {
-        self.buffers.remove(i);
+      while (offset + self.page_size <= end)
+        && i < self.buffers.capacity() as u64
+      {
+        self.buffers.remove(i as usize);
         offset += self.page_size;
         i += 1;
       }
@@ -189,11 +190,11 @@ impl RandomAccess for RandomAccessMemory {
     Ok(())
   }
 
-  fn truncate(&mut self, _length: usize) -> Result<(), Self::Error> {
+  fn truncate(&mut self, _length: u64) -> Result<(), Self::Error> {
     unimplemented!()
   }
 
-  fn len(&mut self) -> Result<usize, Self::Error> {
+  fn len(&self) -> Result<u64, Self::Error> {
     Ok(self.length)
   }
 

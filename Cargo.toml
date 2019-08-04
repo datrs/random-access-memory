@@ -9,9 +9,9 @@ authors = ["datrs <yoshuawuyts@gmail.com>"]
 readme = "README.md"
 
 [dependencies]
-failure = "0.1.1"
-random-access-storage = "2.0.0"
+failure = "0.1.5"
+random-access-storage = "3.0.0"
 
 [dev-dependencies]
-quickcheck = "0.8.1"
-rand = "0.6.0"
+quickcheck = "0.8.5"
+rand = "0.6.5"
