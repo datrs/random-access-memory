@@ -1,12 +1,7 @@
-#[macro_use]
-extern crate quickcheck;
-extern crate rand;
-extern crate random_access_memory as ram;
-extern crate random_access_storage;
-
 use self::Op::*;
-use quickcheck::{Arbitrary, Gen};
+use quickcheck::{quickcheck, Arbitrary, Gen};
 use rand::Rng;
+use random_access_memory as ram;
 use random_access_storage::RandomAccess;
 use std::u8;
 

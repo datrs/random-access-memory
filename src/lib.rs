@@ -3,11 +3,7 @@
 #![cfg_attr(feature = "nightly", doc(include = "../README.md"))]
 #![cfg_attr(test, deny(warnings))]
 
-#[macro_use]
-extern crate failure;
-extern crate random_access_storage;
-
-use failure::Error;
+use failure::{ensure, Error};
 use random_access_storage::RandomAccess;
 use std::cmp;
 use std::io;

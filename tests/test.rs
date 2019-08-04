@@ -1,6 +1,4 @@
-extern crate random_access_memory as ram;
-extern crate random_access_storage;
-
+use random_access_memory as ram;
 use random_access_storage::RandomAccess;
 
 #[test]
