@@ -16,7 +16,7 @@ use std::io;
 #[derive(Debug)]
 pub struct RandomAccessMemory {
   /// The length length of each buffer.
-  page_size: u64,
+  page_size: usize,
 
   /// The memory we read/write to.
   // TODO: initialize as a sparse vector.
@@ -28,7 +28,7 @@ pub struct RandomAccessMemory {
 
 impl RandomAccessMemory {
   /// Create a new instance.
-  pub fn new(page_size: u64) -> Self {
+  pub fn new(page_size: usize) -> Self {
     RandomAccessMemory {
       buffers: Vec::new(),
       page_size,
@@ -47,7 +47,7 @@ impl RandomAccessMemory {
   }
 
   /// Create a new instance, but pass the initial buffers to the constructor.
-  pub fn with_buffers(page_size: u64, buffers: Vec<Vec<u8>>) -> Self {
+  pub fn with_buffers(page_size: usize, buffers: Vec<Vec<u8>>) -> Self {
     RandomAccessMemory {
       page_size,
       buffers,
@@ -65,26 +65,27 @@ impl RandomAccess for RandomAccessMemory {
       self.length = new_len;
     }
 
-    let mut page_num = offset / self.page_size;
-    let mut page_cursor = offset - (page_num * self.page_size);
+    let mut page_num = (offset / self.page_size as u64) as usize;
+    let mut page_cursor =
+      (offset - (page_num * self.page_size) as u64) as usize;
     let mut data_cursor = 0;
 
     // Iterate over data, write to buffers. Subslice if the data is bigger than
     // what we can write in a single go.
     while data_cursor < data.len() {
-      let data_bound = (data.len() - data_cursor) as u64;
+      let data_bound = data.len() - data_cursor;
       let upper_bound = cmp::min(self.page_size, page_cursor + data_bound);
       let range = page_cursor..upper_bound;
       let range_len = (page_cursor as usize..upper_bound as usize).len();
 
       // Allocate buffer if needed. Either append a new buffer to the end, or
       // set a buffer in the center.
-      if self.buffers.get(page_num as usize).is_none() {
+      if self.buffers.get(page_num).is_none() {
         let buf = vec![0; self.page_size as usize];
-        if (self.buffers.len() as u64) < page_num + 1 {
-          self.buffers.resize((page_num + 1) as usize, buf);
+        if self.buffers.len() < page_num + 1 {
+          self.buffers.resize(page_num + 1, buf);
         } else {
-          self.buffers[page_num as usize] = buf;
+          self.buffers[page_num] = buf;
         }
       }
 
@@ -119,8 +120,9 @@ impl RandomAccess for RandomAccessMemory {
       )
     );
 
-    let mut page_num = offset / self.page_size;
-    let mut page_cursor = offset - (page_num * self.page_size);
+    let mut page_num = (offset / self.page_size as u64) as usize;
+    let mut page_cursor =
+      (offset - (page_num * self.page_size) as u64) as usize;
 
     let mut res_buf = vec![0; length as usize];
     let mut res_cursor = 0; // Keep track we read the right amount of bytes.
@@ -129,8 +131,8 @@ impl RandomAccess for RandomAccessMemory {
     while res_cursor < res_capacity {
       let res_bound = res_capacity - res_cursor;
       let page_bound = self.page_size - page_cursor;
-      let relative_bound = cmp::min(res_bound, page_bound);
-      let upper_bound = page_cursor + relative_bound;
+      let relative_bound = cmp::min(res_bound, page_bound as u64);
+      let upper_bound = page_cursor + relative_bound as usize;
       let range = page_cursor..upper_bound;
 
       // Fill until either we're done reading the page, or we're done
@@ -166,23 +168,23 @@ impl RandomAccess for RandomAccessMemory {
   }
 
   fn del(&mut self, offset: u64, length: u64) -> Result<(), Self::Error> {
-    let overflow = offset % self.page_size;
+    let overflow = offset % self.page_size as u64;
     let inc = match overflow {
       0 => 0,
-      _ => self.page_size - overflow,
+      _ => self.page_size as u64 - overflow,
     };
 
     if inc < length {
       let mut offset = offset + inc;
       let length = length - overflow;
       let end = offset + length;
-      let mut i = offset - self.page_size;
+      let mut i = offset - self.page_size as u64;
 
-      while (offset + self.page_size <= end)
+      while (offset + self.page_size as u64 <= end)
         && i < self.buffers.capacity() as u64
       {
         self.buffers.remove(i as usize);
-        offset += self.page_size;
+        offset += self.page_size as u64;
         i += 1;
       }
     }
