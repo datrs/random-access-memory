@@ -4,9 +4,11 @@ rust:
 
 before_script: |
   rustup component add rustfmt &&
-  rustup component add clippy
+  rustup component add clippy &&
+  rustup update nightly
+
 script: |
-  cargo check --all-targets --verbose &&
+  cargo +nightly check --all-targets --verbose &&
   cargo fmt -- --check &&
   cargo clippy -- -D clippy::all &&
   cargo build --verbose &&
