@@ -6,7 +6,6 @@
 use anyhow::anyhow;
 use random_access_storage::RandomAccess;
 use std::cmp;
-use std::io;
 
 /// Main constructor.
 #[derive(Debug)]
@@ -52,10 +51,15 @@ impl RandomAccessMemory {
   }
 }
 
+#[async_trait::async_trait]
 impl RandomAccess for RandomAccessMemory {
   type Error = Box<dyn std::error::Error + Send + Sync>;
 
-  fn write(&mut self, offset: u64, data: &[u8]) -> Result<(), Self::Error> {
+  async fn write(
+    &mut self,
+    offset: u64,
+    data: &[u8],
+  ) -> Result<(), Self::Error> {
     let new_len = offset + data.len() as u64;
     if new_len > self.length {
       self.length = new_len;
@@ -101,11 +105,15 @@ impl RandomAccess for RandomAccessMemory {
     Ok(())
   }
 
-  fn sync_all(&mut self) -> Result<(), Self::Error> {
+  async fn sync_all(&mut self) -> Result<(), Self::Error> {
     Ok(())
   }
 
-  fn read(&mut self, offset: u64, length: u64) -> Result<Vec<u8>, Self::Error> {
+  async fn read(
+    &mut self,
+    offset: u64,
+    length: u64,
+  ) -> Result<Vec<u8>, Self::Error> {
     if (offset + length) > self.length {
       return Err(
         anyhow!(
@@ -156,16 +164,16 @@ impl RandomAccess for RandomAccessMemory {
     Ok(res_buf)
   }
 
-  fn read_to_writer(
+  async fn read_to_writer(
     &mut self,
     _offset: u64,
     _length: u64,
-    _buf: &mut impl io::Write,
+    _buf: &mut (impl futures::io::AsyncWrite + Send),
   ) -> Result<(), Self::Error> {
     unimplemented!()
   }
 
-  fn del(&mut self, offset: u64, length: u64) -> Result<(), Self::Error> {
+  async fn del(&mut self, offset: u64, length: u64) -> Result<(), Self::Error> {
     let overflow = offset % self.page_size as u64;
     let inc = match overflow {
       0 => 0,
@@ -190,15 +198,15 @@ impl RandomAccess for RandomAccessMemory {
     Ok(())
   }
 
-  fn truncate(&mut self, _length: u64) -> Result<(), Self::Error> {
+  async fn truncate(&mut self, _length: u64) -> Result<(), Self::Error> {
     unimplemented!()
   }
 
-  fn len(&self) -> Result<u64, Self::Error> {
+  async fn len(&self) -> Result<u64, Self::Error> {
     Ok(self.length)
   }
 
-  fn is_empty(&mut self) -> Result<bool, Self::Error> {
+  async fn is_empty(&mut self) -> Result<bool, Self::Error> {
     Ok(self.length == 0)
   }
 }
