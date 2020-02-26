@@ -3,7 +3,7 @@
 #![cfg_attr(feature = "nightly", doc(include = "../README.md"))]
 #![cfg_attr(test, deny(warnings))]
 
-use failure::{ensure, Error};
+use anyhow::anyhow;
 use random_access_storage::RandomAccess;
 use std::cmp;
 use std::io;
@@ -53,7 +53,7 @@ impl RandomAccessMemory {
 }
 
 impl RandomAccess for RandomAccessMemory {
-  type Error = Error;
+  type Error = Box<dyn std::error::Error + Send + Sync>;
 
   fn write(&mut self, offset: u64, data: &[u8]) -> Result<(), Self::Error> {
     let new_len = offset + data.len() as u64;
@@ -106,15 +106,17 @@ impl RandomAccess for RandomAccessMemory {
   }
 
   fn read(&mut self, offset: u64, length: u64) -> Result<Vec<u8>, Self::Error> {
-    ensure!(
-      (offset + length) <= self.length,
-      format!(
-        "Read bounds exceeded. {} < {}..{}",
-        self.length,
-        offset,
-        offset + length
-      )
-    );
+    if (offset + length) > self.length {
+      return Err(
+        anyhow!(
+          "Read bounds exceeded. {} < {}..{}",
+          self.length,
+          offset,
+          offset + length
+        )
+        .into(),
+      );
+    };
 
     let mut page_num = (offset / self.page_size as u64) as usize;
     let mut page_cursor =
