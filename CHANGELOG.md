@@ -1,3 +1,16 @@
+## 2020-03-03, Version 1.2.0
+### Commits
+- [[`d9fbf73cf1`](https://github.com/datrs/random-access-memory/commit/d9fbf73cf182e6f02e5adc4c016afe38e8650a88)] (cargo-release) version 1.2.0 (Bruno Tavares)
+- [[`0b845fbcc7`](https://github.com/datrs/random-access-memory/commit/0b845fbcc747093d8c9eae972e92c8d4a692a208)] Move from failure to use stderr (#25) (Bruno Tavares)
+
+### Stats
+```diff
+ Cargo.toml |  4 ++--
+ src/lib.rs | 24 +++++++++++++-----------
+ 2 files changed, 15 insertions(+), 13 deletions(-)
+```
+
+
 ## 2019-04-24, Version 1.0.0
 ### Commits
 - [[`a7ff8ea564`](https://github.com/datrs/random-access-memory/commit/a7ff8ea564f11673b3e39d605befe9b25fc58574)] (cargo-release) version 1.0.0 (Yoshua Wuyts)
