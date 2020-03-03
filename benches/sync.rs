@@ -1,39 +1,46 @@
 #![feature(test)]
 
 mod sync {
-  extern crate random_access_memory as ram;
-  extern crate random_access_storage;
   extern crate test;
 
-  use self::random_access_storage::RandomAccess;
-  use self::test::Bencher;
+  use random_access_memory as ram;
+  use random_access_storage::RandomAccess;
+  use test::Bencher;
 
   #[bench]
   fn write_hello_world(b: &mut Bencher) {
     b.iter(|| {
-      let mut file = ram::RandomAccessMemory::default();
-      file.write(0, b"hello").unwrap();
-      file.write(5, b" world").unwrap();
+      async_std::task::block_on(async {
+        let mut file = ram::RandomAccessMemory::default();
+        file.write(0, b"hello").await.unwrap();
+        file.write(5, b" world").await.unwrap();
+      })
     });
   }
 
   #[bench]
   fn read_hello_world(b: &mut Bencher) {
-    let mut file = ram::RandomAccessMemory::default();
-    file.write(0, b"hello").unwrap();
-    file.write(5, b" world").unwrap();
-    b.iter(|| {
-      let _text = file.read(0, 11).unwrap();
+    async_std::task::block_on(async {
+      let mut file = ram::RandomAccessMemory::default();
+      file.write(0, b"hello").await.unwrap();
+      file.write(5, b" world").await.unwrap();
+      b.iter(|| {
+        async_std::task::block_on(async {
+          let _text = file.read(0, 11).await.unwrap();
+        })
+      });
     });
   }
 
   #[bench]
   fn read_write_hello_world(b: &mut Bencher) {
     b.iter(|| {
-      let mut file = ram::RandomAccessMemory::default();
-      file.write(0, b"hello").unwrap();
-      file.write(5, b" world").unwrap();
-      let _text = file.read(0, 11).unwrap();
+      async_std::task::block_on(async {
+        let mut file = ram::RandomAccessMemory::default();
+        file.write(0, b"hello").await.unwrap();
+        file.write(5, b" world").await.unwrap();
+        let _text = file.read(0, 11).await.unwrap();
+      })
     });
   }
 }
