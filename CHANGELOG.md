@@ -1,3 +1,23 @@
+## 2020-03-03, Version 2.0.0
+### Commits
+- [[`cab67711c4`](https://github.com/datrs/random-access-memory/commit/cab67711c42f6229fcf01fac0bfae0b5d0a3fe86)] (cargo-release) version 2.0.0 (Bruno Tavares)
+- [[`fc07e9cfef`](https://github.com/datrs/random-access-memory/commit/fc07e9cfefdc808f950fada80df7bfe697eaad6d)] Implement async API for random-access-storage (#26) (Bruno Tavares)
+- [[`c10203a920`](https://github.com/datrs/random-access-memory/commit/c10203a9206c6e5f93f31b34998096fa1828d947)] Update changelog (Bruno Tavares)
+
+### Stats
+```diff
+ CHANGELOG.md        | 13 +++++++++++++
+ Cargo.toml          |  7 +++++--
+ README.md           |  8 ++++----
+ benches/sync.rs     | 39 +++++++++++++++++++++++----------------
+ src/lib.rs          | 28 ++++++++++++++++++----------
+ tests/model.rs      | 52 +++++++++++++++++++++++++++-------------------------
+ tests/regression.rs | 36 ++++++++++++++++++------------------
+ tests/test.rs       | 52 ++++++++++++++++++++++++++--------------------------
+ 8 files changed, 134 insertions(+), 101 deletions(-)
+```
+
+
 ## 2020-03-03, Version 1.2.0
 ### Commits
 - [[`d9fbf73cf1`](https://github.com/datrs/random-access-memory/commit/d9fbf73cf182e6f02e5adc4c016afe38e8650a88)] (cargo-release) version 1.2.0 (Bruno Tavares)
