@@ -3,6 +3,8 @@
 #![cfg_attr(feature = "nightly", doc(include = "../README.md"))]
 #![cfg_attr(test, deny(warnings))]
 
+pub use intmap::IntMap;
+
 use anyhow::anyhow;
 use random_access_storage::RandomAccess;
 use std::cmp;
@@ -14,39 +16,48 @@ pub struct RandomAccessMemory {
   page_size: usize,
 
   /// The memory we read/write to.
-  // TODO: initialize as a sparse vector.
-  buffers: Vec<Vec<u8>>,
+  buffers: IntMap<Vec<u8>>,
 
   /// Total length of the data.
   length: u64,
 }
 
+impl Default for RandomAccessMemory {
+  /// Create a new instance with a 1mb page size.
+  fn default() -> Self {
+    RandomAccessMemory::new(1024 * 1024)
+  }
+}
+
 impl RandomAccessMemory {
   /// Create a new instance.
   pub fn new(page_size: usize) -> Self {
-    RandomAccessMemory {
-      buffers: Vec::new(),
-      page_size,
-      length: 0,
-    }
-  }
-
-  /// Create a new instance with a 1mb page size.
-  // We cannot use the `Default` trait here because we aren't returning `Self`.
-  pub fn default() -> Self {
-    RandomAccessMemory {
-      buffers: Vec::new(),
-      page_size: 1024 * 1024,
-      length: 0,
-    }
+    RandomAccessMemory::with_buffers(page_size, IntMap::new())
   }
 
   /// Create a new instance, but pass the initial buffers to the constructor.
-  pub fn with_buffers(page_size: usize, buffers: Vec<Vec<u8>>) -> Self {
+  pub fn with_buffers(page_size: usize, buffers: IntMap<Vec<u8>>) -> Self {
     RandomAccessMemory {
       page_size,
       buffers,
       length: 0,
+    }
+  }
+
+  /// Returns the page number and index within that page for a given offset.
+  /// If `exclusive_end` is true, when hitting the exact border of two pages
+  /// gives the previous page and page size as index.
+  fn page_num_and_index(
+    &self,
+    offset: u64,
+    exclusive_end: bool,
+  ) -> (usize, usize) {
+    let page_num = (offset / (self.page_size as u64)) as usize;
+    let page_index = (offset % (self.page_size as u64)) as usize;
+    if page_index == 0 && exclusive_end {
+      (page_num - 1, self.page_size)
+    } else {
+      (page_num, page_index)
     }
   }
 }
@@ -80,19 +91,15 @@ impl RandomAccess for RandomAccessMemory {
 
       // Allocate buffer if needed. Either append a new buffer to the end, or
       // set a buffer in the center.
-      if self.buffers.get(page_num).is_none() {
+      if self.buffers.get(page_num as u64).is_none() {
         let buf = vec![0; self.page_size as usize];
-        if self.buffers.len() < page_num + 1 {
-          self.buffers.resize(page_num + 1, buf);
-        } else {
-          self.buffers[page_num] = buf;
-        }
+        self.buffers.insert(page_num as u64, buf);
       }
 
       // Copy data from the vec slice.
       // TODO: use a batch operation such as `.copy_from_slice()` so it can be
       // optimized.
-      let buffer = &mut self.buffers[page_num as usize];
+      let buffer = &mut self.buffers.get_mut(page_num as u64).unwrap();
       for (index, buf_index) in range.enumerate() {
         buffer[buf_index as usize] = data[data_cursor + index];
       }
@@ -143,7 +150,7 @@ impl RandomAccess for RandomAccessMemory {
 
       // Fill until either we're done reading the page, or we're done
       // filling the buffer. Whichever arrives sooner.
-      match self.buffers.get(page_num as usize) {
+      match self.buffers.get(page_num as u64) {
         Some(buf) => {
           for (index, buf_index) in range.enumerate() {
             res_buf[res_cursor as usize + index] = buf[buf_index as usize];
@@ -174,32 +181,78 @@ impl RandomAccess for RandomAccessMemory {
   }
 
   async fn del(&mut self, offset: u64, length: u64) -> Result<(), Self::Error> {
-    let overflow = offset % self.page_size as u64;
-    let inc = match overflow {
-      0 => 0,
-      _ => self.page_size as u64 - overflow,
-    };
+    let (first_page_num, first_page_start) =
+      self.page_num_and_index(offset, false);
+    let (last_page_num, last_page_end) =
+      self.page_num_and_index(offset + length, true);
 
-    if inc < length {
-      let mut offset = offset + inc;
-      let length = length - overflow;
-      let end = offset + length;
-      let mut i = offset - self.page_size as u64;
+    // Check if we need to zero bytes in the first page
+    if first_page_start > 0
+      || (first_page_num == last_page_num && last_page_end > 0)
+    {
+      if let Some(page) = self.buffers.get_mut(first_page_num as u64) {
+        // Need to zero part of the first page
+        let begin_page_end = first_page_start
+          + cmp::min(
+            length as usize,
+            self.page_size - first_page_start as usize,
+          );
+        for index in first_page_start..begin_page_end {
+          page[index] = 0;
+        }
+      }
+    }
 
-      while (offset + self.page_size as u64 <= end)
-        && i < self.buffers.capacity() as u64
-      {
-        self.buffers.remove(i as usize);
-        offset += self.page_size as u64;
-        i += 1;
+    // Delete intermediate pages
+    if last_page_num > first_page_num + 1
+      || (first_page_start == 0 && last_page_num == first_page_num + 1)
+    {
+      let first_page_to_drop = if first_page_start == 0 {
+        first_page_num
+      } else {
+        first_page_num + 1
+      };
+
+      for index in first_page_to_drop..last_page_num {
+        self.buffers.remove(index as u64);
+      }
+    }
+
+    // Finally zero the last page
+    if last_page_num > first_page_num && last_page_end > 0 {
+      if let Some(page) = self.buffers.get_mut(last_page_num as u64) {
+        // Need to zero part of the final page
+        for index in 0..last_page_end {
+          page[index] = 0;
+        }
       }
     }
 
     Ok(())
   }
 
-  async fn truncate(&mut self, _length: u64) -> Result<(), Self::Error> {
-    unimplemented!()
+  async fn truncate(&mut self, length: u64) -> Result<(), Self::Error> {
+    let (current_last_page_num, _) = self.page_num_and_index(self.length, true);
+
+    if self.length < length {
+      let truncate_page_num = (length / self.page_size as u64) as usize;
+      // Remove all of the pages between the old length and this newer
+      // length that might have been left behind.
+      for index in current_last_page_num + 1..truncate_page_num + 1 {
+        self.buffers.remove(index as u64);
+      }
+    } else if self.length > length {
+      let delete_length =
+        ((current_last_page_num + 1) * self.page_size) - length as usize;
+      // Make sure to delete the remainder to not leave anything but
+      // zeros lying around.
+      self.del(length, delete_length as u64).await?;
+    }
+
+    // Set new length
+    self.length = length;
+
+    Ok(())
   }
 
   async fn len(&self) -> Result<u64, Self::Error> {
