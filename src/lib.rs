@@ -255,7 +255,7 @@ impl RandomAccess for RandomAccessMemory {
     Ok(())
   }
 
-  async fn len(&self) -> Result<u64, Self::Error> {
+  async fn len(&mut self) -> Result<u64, Self::Error> {
     Ok(self.length)
   }
 
