@@ -171,15 +171,6 @@ impl RandomAccess for RandomAccessMemory {
     Ok(res_buf)
   }
 
-  async fn read_to_writer(
-    &mut self,
-    _offset: u64,
-    _length: u64,
-    _buf: &mut (impl futures::io::AsyncWrite + Send),
-  ) -> Result<(), Self::Error> {
-    unimplemented!()
-  }
-
   async fn del(&mut self, offset: u64, length: u64) -> Result<(), Self::Error> {
     let (first_page_num, first_page_start) =
       self.page_num_and_index(offset, false);
