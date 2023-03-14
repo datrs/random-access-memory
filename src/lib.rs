@@ -55,9 +55,58 @@ impl RandomAccessMemory {
     let page_num = (offset / (self.page_size as u64)) as usize;
     let page_index = (offset % (self.page_size as u64)) as usize;
     if page_index == 0 && exclusive_end {
-      (page_num - 1, self.page_size)
+      (if page_num > 0 { page_num - 1 } else { 0 }, self.page_size)
     } else {
       (page_num, page_index)
+    }
+  }
+
+  fn zero(&mut self, offset: u64, length: u64) {
+    let (first_page_num, first_page_start) =
+      self.page_num_and_index(offset, false);
+    let (last_page_num, last_page_end) =
+      self.page_num_and_index(offset + length, true);
+
+    // Check if we need to zero bytes in the first page
+    if first_page_start > 0
+      || (first_page_num == last_page_num && last_page_end > 0)
+    {
+      if let Some(page) = self.buffers.get_mut(first_page_num as u64) {
+        // Need to zero part of the first page
+        let begin_page_end = first_page_start
+          + cmp::min(
+            length as usize,
+            self.page_size - first_page_start as usize,
+          );
+        for index in first_page_start..begin_page_end {
+          page[index] = 0;
+        }
+      }
+    }
+
+    // Delete intermediate pages
+    if last_page_num > first_page_num + 1
+      || (first_page_start == 0 && last_page_num == first_page_num + 1)
+    {
+      let first_page_to_drop = if first_page_start == 0 {
+        first_page_num
+      } else {
+        first_page_num + 1
+      };
+
+      for index in first_page_to_drop..last_page_num {
+        self.buffers.remove(index as u64);
+      }
+    }
+
+    // Finally zero the last page
+    if last_page_num > first_page_num && last_page_end > 0 {
+      if let Some(page) = self.buffers.get_mut(last_page_num as u64) {
+        // Need to zero part of the final page
+        for index in 0..last_page_end {
+          page[index] = 0;
+        }
+      }
     }
   }
 }
@@ -172,54 +221,25 @@ impl RandomAccess for RandomAccessMemory {
   }
 
   async fn del(&mut self, offset: u64, length: u64) -> Result<(), Self::Error> {
-    let (first_page_num, first_page_start) =
-      self.page_num_and_index(offset, false);
-    let (last_page_num, last_page_end) =
-      self.page_num_and_index(offset + length, true);
+    if offset > self.length {
+      return Err(
+        anyhow!("Delete offset out of bounds. {} > {}", offset, self.length,)
+          .into(),
+      );
+    };
 
-    // Check if we need to zero bytes in the first page
-    if first_page_start > 0
-      || (first_page_num == last_page_num && last_page_end > 0)
-    {
-      if let Some(page) = self.buffers.get_mut(first_page_num as u64) {
-        // Need to zero part of the first page
-        let begin_page_end = first_page_start
-          + cmp::min(
-            length as usize,
-            self.page_size - first_page_start as usize,
-          );
-        for index in first_page_start..begin_page_end {
-          page[index] = 0;
-        }
-      }
+    if length == 0 {
+      // No-op
+      return Ok(());
     }
 
-    // Delete intermediate pages
-    if last_page_num > first_page_num + 1
-      || (first_page_start == 0 && last_page_num == first_page_num + 1)
-    {
-      let first_page_to_drop = if first_page_start == 0 {
-        first_page_num
-      } else {
-        first_page_num + 1
-      };
-
-      for index in first_page_to_drop..last_page_num {
-        self.buffers.remove(index as u64);
-      }
+    // Delete is truncate if up to the current length or more is deleted
+    if offset + length >= self.length {
+      return self.truncate(offset).await;
     }
 
-    // Finally zero the last page
-    if last_page_num > first_page_num && last_page_end > 0 {
-      if let Some(page) = self.buffers.get_mut(last_page_num as u64) {
-        // Need to zero part of the final page
-        for index in 0..last_page_end {
-          page[index] = 0;
-        }
-      }
-    }
-
-    Ok(())
+    // Deleting means zeroing
+    Ok(self.zero(offset, length))
   }
 
   async fn truncate(&mut self, length: u64) -> Result<(), Self::Error> {
@@ -235,9 +255,9 @@ impl RandomAccess for RandomAccessMemory {
     } else if self.length > length {
       let delete_length =
         ((current_last_page_num + 1) * self.page_size) - length as usize;
-      // Make sure to delete the remainder to not leave anything but
+      // Make sure to zero the remainder to not leave anything but
       // zeros lying around.
-      self.del(length, delete_length as u64).await?;
+      self.zero(length, delete_length as u64);
     }
 
     // Set new length

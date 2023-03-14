@@ -72,6 +72,8 @@ async fn assert_delete(page_size: usize) {
   assert_eq!(String::from_utf8(text.to_vec()).unwrap(), "rld people");
   file.del(8, 4).await.unwrap();
   assert_eq!(file.len().await.unwrap(), 18);
+  file.del(10, 8).await.unwrap();
+  assert_eq!(file.len().await.unwrap(), 10);
 }
 
 #[async_std::test]

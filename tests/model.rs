@@ -11,6 +11,7 @@ const MAX_FILE_SIZE: u64 = 5 * 10; // 5mb
 enum Op {
   Read { offset: u64, length: u64 },
   Write { offset: u64, data: Vec<u8> },
+  Delete { offset: u64, length: u64 },
 }
 
 impl Arbitrary for Op {
@@ -18,14 +19,18 @@ impl Arbitrary for Op {
     let offset: u64 = g.gen_range(0, MAX_FILE_SIZE);
     let length: u64 = g.gen_range(0, MAX_FILE_SIZE / 3);
 
-    if g.gen::<bool>() {
+    let op = g.gen_range(0 as u8, 3 as u8);
+
+    if op == 0 {
       Read { offset, length }
-    } else {
+    } else if op == 1 {
       let mut data = Vec::with_capacity(length as usize);
       for _ in 0..length {
         data.push(u8::arbitrary(g));
       }
       Write { offset, data }
+    } else {
+      Delete { offset, length }
     }
   }
 }
@@ -57,6 +62,18 @@ quickcheck! {
             implementation.write(offset, &*data).await.expect("Writes should be successful.");
             model[offset as usize..end as usize].copy_from_slice(data);
           },
+          Delete { offset, length } => {
+            if model.len() >= offset as usize {
+              implementation.del(offset, length).await.expect("Deletes should be successful.");
+              if offset + length < model.len() as u64 {
+                model[offset as usize..(offset + length) as usize].fill(0);
+              } else {
+                model.resize(offset as usize, 0);
+              };
+            } else {
+              assert!(implementation.del(offset, length).await.is_err());
+            }
+          }
         }
       }
       true
