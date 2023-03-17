@@ -10,8 +10,7 @@ readme = "README.md"
 edition = "2018"
 
 [dependencies]
-anyhow = "1.0.26"
-random-access-storage = { git = "https://github.com/ttiurani/random-access-storage" , branch = "tokio"}
+random-access-storage = { git = "https://github.com/ttiurani/random-access-storage" , branch = "thiserror"}
 async-trait = "0.1.63"
 intmap = "2.0.0"
 

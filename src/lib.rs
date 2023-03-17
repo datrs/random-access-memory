@@ -5,8 +5,7 @@
 
 pub use intmap::IntMap;
 
-use anyhow::anyhow;
-use random_access_storage::RandomAccess;
+use random_access_storage::{RandomAccess, RandomAccessError};
 use std::cmp;
 
 /// Main constructor.
@@ -113,13 +112,11 @@ impl RandomAccessMemory {
 
 #[async_trait::async_trait]
 impl RandomAccess for RandomAccessMemory {
-  type Error = Box<dyn std::error::Error + Send + Sync>;
-
   async fn write(
     &mut self,
     offset: u64,
     data: &[u8],
-  ) -> Result<(), Self::Error> {
+  ) -> Result<(), RandomAccessError> {
     let new_len = offset + data.len() as u64;
     if new_len > self.length {
       self.length = new_len;
@@ -161,7 +158,7 @@ impl RandomAccess for RandomAccessMemory {
     Ok(())
   }
 
-  async fn sync_all(&mut self) -> Result<(), Self::Error> {
+  async fn sync_all(&mut self) -> Result<(), RandomAccessError> {
     Ok(())
   }
 
@@ -169,17 +166,13 @@ impl RandomAccess for RandomAccessMemory {
     &mut self,
     offset: u64,
     length: u64,
-  ) -> Result<Vec<u8>, Self::Error> {
+  ) -> Result<Vec<u8>, RandomAccessError> {
     if (offset + length) > self.length {
-      return Err(
-        anyhow!(
-          "Read bounds exceeded. {} < {}..{}",
-          self.length,
-          offset,
-          offset + length
-        )
-        .into(),
-      );
+      return Err(RandomAccessError::RangeOutOfBounds {
+        start: offset,
+        end: offset + length,
+        length: self.length,
+      });
     };
 
     let mut page_num = (offset / self.page_size as u64) as usize;
@@ -220,12 +213,16 @@ impl RandomAccess for RandomAccessMemory {
     Ok(res_buf)
   }
 
-  async fn del(&mut self, offset: u64, length: u64) -> Result<(), Self::Error> {
+  async fn del(
+    &mut self,
+    offset: u64,
+    length: u64,
+  ) -> Result<(), RandomAccessError> {
     if offset > self.length {
-      return Err(
-        anyhow!("Delete offset out of bounds. {} > {}", offset, self.length,)
-          .into(),
-      );
+      return Err(RandomAccessError::OffsetOutOfBounds {
+        offset,
+        length: self.length,
+      });
     };
 
     if length == 0 {
@@ -242,7 +239,7 @@ impl RandomAccess for RandomAccessMemory {
     Ok(self.zero(offset, length))
   }
 
-  async fn truncate(&mut self, length: u64) -> Result<(), Self::Error> {
+  async fn truncate(&mut self, length: u64) -> Result<(), RandomAccessError> {
     let (current_last_page_num, _) = self.page_num_and_index(self.length, true);
 
     if self.length < length {
@@ -266,11 +263,11 @@ impl RandomAccess for RandomAccessMemory {
     Ok(())
   }
 
-  async fn len(&mut self) -> Result<u64, Self::Error> {
+  async fn len(&mut self) -> Result<u64, RandomAccessError> {
     Ok(self.length)
   }
 
-  async fn is_empty(&mut self) -> Result<bool, Self::Error> {
+  async fn is_empty(&mut self) -> Result<bool, RandomAccessError> {
     Ok(self.length == 0)
   }
 }
