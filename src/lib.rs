@@ -168,9 +168,9 @@ impl RandomAccess for RandomAccessMemory {
     length: u64,
   ) -> Result<Vec<u8>, RandomAccessError> {
     if (offset + length) > self.length {
-      return Err(RandomAccessError::RangeOutOfBounds {
-        start: offset,
-        end: offset + length,
+      return Err(RandomAccessError::OutOfBounds {
+        offset,
+        end: Some(offset + length),
         length: self.length,
       });
     };
@@ -219,8 +219,9 @@ impl RandomAccess for RandomAccessMemory {
     length: u64,
   ) -> Result<(), RandomAccessError> {
     if offset > self.length {
-      return Err(RandomAccessError::OffsetOutOfBounds {
+      return Err(RandomAccessError::OutOfBounds {
         offset,
+        end: None,
         length: self.length,
       });
     };
