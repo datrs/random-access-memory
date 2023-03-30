@@ -1,13 +1,13 @@
 [package]
 name = "random-access-memory"
-version = "2.0.0"
+version = "3.0.0"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/datrs/random-access-memory"
 documentation = "https://docs.rs/random-access-memory"
-description = "Continuously read,write to memory using random offsets and lengths"
-authors = ["datrs <yoshuawuyts@gmail.com>"]
+description = "Continuously read and write to memory using random offsets and lengths"
+authors = ["datrs <yoshuawuyts@gmail.com>", "Timo Tiuraniemi <timo.tiuraniemi@iki.fi>"]
 readme = "README.md"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 random-access-storage = { git = "https://github.com/ttiurani/random-access-storage" , branch = "thiserror"}
