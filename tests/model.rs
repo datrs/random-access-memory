@@ -19,7 +19,7 @@ impl Arbitrary for Op {
     let offset: u64 = g.gen_range(0, MAX_FILE_SIZE);
     let length: u64 = g.gen_range(0, MAX_FILE_SIZE / 3);
 
-    let op = g.gen_range(0 as u8, 3 as u8);
+    let op = g.gen_range(0_u8, 3_u8);
 
     if op == 0 {
       Read { offset, length }
@@ -59,7 +59,7 @@ quickcheck! {
             if model.len() < end as usize {
               model.resize(end as usize, 0);
             }
-            implementation.write(offset, &*data).await.expect("Writes should be successful.");
+            implementation.write(offset, data).await.expect("Writes should be successful.");
             model[offset as usize..end as usize].copy_from_slice(data);
           },
           Delete { offset, length } => {

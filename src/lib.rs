@@ -1,4 +1,4 @@
-#![deny(missing_docs)]
+#![forbid(unsafe_code, missing_docs)]
 #![cfg_attr(test, deny(warnings))]
 #![doc(test(attr(deny(warnings))))]
 //! # Continuously read and write to memory using random offsets and lengths
@@ -88,6 +88,7 @@ impl Default for RandomAccessMemory {
   }
 }
 
+#[allow(clippy::needless_range_loop)]
 impl RandomAccessMemory {
   /// Create a new instance with `page_size` in bytes.
   pub fn new(page_size: usize) -> Self {
@@ -134,10 +135,7 @@ impl RandomAccessMemory {
       if let Some(page) = self.buffers.get_mut(first_page_num as u64) {
         // Need to zero part of the first page
         let begin_page_end = first_page_start
-          + cmp::min(
-            length as usize,
-            self.page_size - first_page_start as usize,
-          );
+          + cmp::min(length as usize, self.page_size - first_page_start);
         for index in first_page_start..begin_page_end {
           page[index] = 0;
         }
@@ -194,12 +192,12 @@ impl RandomAccess for RandomAccessMemory {
       let data_bound = data.len() - data_cursor;
       let upper_bound = cmp::min(self.page_size, page_cursor + data_bound);
       let range = page_cursor..upper_bound;
-      let range_len = (page_cursor as usize..upper_bound as usize).len();
+      let range_len = (page_cursor..upper_bound).len();
 
       // Allocate buffer if needed. Either append a new buffer to the end, or
       // set a buffer in the center.
       if self.buffers.get(page_num as u64).is_none() {
-        let buf = vec![0; self.page_size as usize];
+        let buf = vec![0; self.page_size];
         self.buffers.insert(page_num as u64, buf);
       }
 
@@ -208,7 +206,7 @@ impl RandomAccess for RandomAccessMemory {
       // optimized.
       let buffer = &mut self.buffers.get_mut(page_num as u64).unwrap();
       for (index, buf_index) in range.enumerate() {
-        buffer[buf_index as usize] = data[data_cursor + index];
+        buffer[buf_index] = data[data_cursor + index];
       }
 
       page_num += 1;
@@ -256,7 +254,7 @@ impl RandomAccess for RandomAccessMemory {
       match self.buffers.get(page_num as u64) {
         Some(buf) => {
           for (index, buf_index) in range.enumerate() {
-            res_buf[res_cursor as usize + index] = buf[buf_index as usize];
+            res_buf[res_cursor as usize + index] = buf[buf_index];
           }
         }
         None => {
@@ -298,9 +296,11 @@ impl RandomAccess for RandomAccessMemory {
     }
 
     // Deleting means zeroing
-    Ok(self.zero(offset, length))
+    self.zero(offset, length);
+    Ok(())
   }
 
+  #[allow(clippy::comparison_chain)]
   async fn truncate(&mut self, length: u64) -> Result<(), RandomAccessError> {
     let (current_last_page_num, _) = self.page_num_and_index(self.length, true);
 

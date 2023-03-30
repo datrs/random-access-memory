@@ -42,9 +42,9 @@ async fn can_len() {
 #[async_std::test]
 async fn can_is_empty() {
   let mut file = ram::RandomAccessMemory::default();
-  assert_eq!(file.is_empty().await.unwrap(), true);
+  assert!(file.is_empty().await.unwrap());
   file.write(0, b"hello").await.unwrap();
-  assert_eq!(file.is_empty().await.unwrap(), false);
+  assert!(!file.is_empty().await.unwrap());
 }
 
 #[async_std::test]
@@ -95,9 +95,8 @@ async fn assert_truncate_lt(page_size: usize) {
   assert_eq!(file.len().await.unwrap(), 7);
   let text = file.read(0, 7).await.unwrap();
   assert_eq!(String::from_utf8(text.to_vec()).unwrap(), "hello w");
-  match file.read(0, 8).await {
-    Ok(_) => panic!("storage is too big. read past the end should have failed"),
-    _ => {}
+  if file.read(0, 8).await.is_ok() {
+    panic!("storage is too big. read past the end should have failed");
   };
   file.write(11, b" people").await.unwrap();
   assert_eq!(file.len().await.unwrap(), 18);
