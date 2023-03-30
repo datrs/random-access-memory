@@ -1,23 +1,83 @@
-#![cfg_attr(feature = "nightly", deny(missing_docs))]
-#![cfg_attr(feature = "nightly", feature(external_doc))]
-#![cfg_attr(feature = "nightly", doc(include = "../README.md"))]
+#![deny(missing_docs)]
 #![cfg_attr(test, deny(warnings))]
+#![doc(test(attr(deny(warnings))))]
+//! # Continuously read and write to memory using random offsets and lengths
+//! [RandomAccessMemory] is a complete implementation of [random-access-storage](https://docs.rs/random-access-storage)
+//! for in-memory storage.
+//!
+//! See also [random-access-disk](https://docs.rs/random-access-disk) for on-disk storage
+//! that can be swapped with this.
+//!
+//! ## Examples
+//!
+//! Reading, writing, deleting and truncating:
+//!
+//! ```
+//! # async_std::task::block_on(async {
+//! use random_access_storage::RandomAccess;
+//! use random_access_memory::RandomAccessMemory;
+//!
+//! let mut storage = RandomAccessMemory::default();
+//! storage.write(0, b"hello").await.unwrap();
+//! storage.write(5, b" world").await.unwrap();
+//! assert_eq!(storage.read(0, 11).await.unwrap(), b"hello world");
+//! assert_eq!(storage.len().await.unwrap(), 11);
+//! storage.del(5, 2).await.unwrap();
+//! assert_eq!(storage.read(5, 2).await.unwrap(), [0, 0]);
+//! assert_eq!(storage.len().await.unwrap(), 11);
+//! storage.truncate(2).await.unwrap();
+//! assert_eq!(storage.len().await.unwrap(), 2);
+//! storage.truncate(5).await.unwrap();
+//! assert_eq!(storage.len().await.unwrap(), 5);
+//! assert_eq!(storage.read(0, 5).await.unwrap(), [b'h', b'e', 0, 0, 0]);
+//! # })
+//! ```
+//!
+//! In order to get benefits from the swappable interface, you will
+//! in most cases want to use generic functions for storage manipulation:
+//!
+//! ```
+//! # async_std::task::block_on(async {
+//! use random_access_storage::RandomAccess;
+//! use random_access_memory::RandomAccessMemory;
+//! use std::fmt::Debug;
+//!
+//! let mut storage = RandomAccessMemory::default();
+//! write_hello_world(&mut storage).await;
+//! assert_eq!(read_hello_world(&mut storage).await, b"hello world");
+//!
+//! /// Write with swappable storage
+//! async fn write_hello_world<T>(storage: &mut T)
+//! where T: RandomAccess + Debug + Send,
+//! {
+//!   storage.write(0, b"hello").await.unwrap();
+//!   storage.write(5, b" world").await.unwrap();
+//! }
+//!
+//! /// Read with swappable storage
+//! async fn read_hello_world<T>(storage: &mut T) -> Vec<u8>
+//! where T: RandomAccess + Debug + Send,
+//! {
+//!   storage.read(0, 11).await.unwrap()
+//! }
+//! # })
+//! ```
 
 pub use intmap::IntMap;
 
 use random_access_storage::{RandomAccess, RandomAccessError};
 use std::cmp;
 
-/// Main constructor.
+/// In-memory storage for random access
 #[derive(Debug)]
 pub struct RandomAccessMemory {
-  /// The length length of each buffer.
+  /// Length of each buffer
   page_size: usize,
 
-  /// The memory we read/write to.
+  /// Allocated memory
   buffers: IntMap<Vec<u8>>,
 
-  /// Total length of the data.
+  /// Total length of the data
   length: u64,
 }
 
@@ -29,12 +89,12 @@ impl Default for RandomAccessMemory {
 }
 
 impl RandomAccessMemory {
-  /// Create a new instance.
+  /// Create a new instance with `page_size` in bytes.
   pub fn new(page_size: usize) -> Self {
     RandomAccessMemory::with_buffers(page_size, IntMap::new())
   }
 
-  /// Create a new instance, but pass the initial buffers to the constructor.
+  /// Create a new instance with `page_size` in bytes, but pass the initial buffers to the constructor.
   pub fn with_buffers(page_size: usize, buffers: IntMap<Vec<u8>>) -> Self {
     RandomAccessMemory {
       page_size,
@@ -60,6 +120,7 @@ impl RandomAccessMemory {
     }
   }
 
+  /// Zero given range
   fn zero(&mut self, offset: u64, length: u64) {
     let (first_page_num, first_page_start) =
       self.page_num_and_index(offset, false);
