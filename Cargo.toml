@@ -10,8 +10,8 @@ readme = "README.md"
 edition = "2021"
 
 [dependencies]
-random-access-storage = { git = "https://github.com/ttiurani/random-access-storage" , branch = "thiserror"}
-async-trait = "0.1.63"
+random-access-storage = "5.0.0"
+async-trait = "0.1"
 intmap = "2.0.0"
 
 [dev-dependencies]
