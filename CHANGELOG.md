@@ -1,3 +1,36 @@
+## 2023-04-12, Version 3.0.0
+### Commits
+- [[`ef600832dd`](https://github.com/datrs/random-access-memory/commit/ef600832ddc13d2ba90250ef710a9e0b142e4bad)] Release 3.0.0 (Timo Tiuraniemi)
+- [[`e6d7e97ed1`](https://github.com/datrs/random-access-memory/commit/e6d7e97ed1ca4e953a8279e79b614db15562b999)] Switch from Travis to GHA (Timo Tiuraniemi)
+- [[`08a7da6cdd`](https://github.com/datrs/random-access-memory/commit/08a7da6cdd016c4fc8961849de9ec716a18e2a19)] Use released 5.0.0 of random-access-storage (Timo Tiuraniemi)
+- [[`d69cde848c`](https://github.com/datrs/random-access-memory/commit/d69cde848c3d9591c818739065c122a019f862f4)] Switch from quickcheck to proptest (Timo Tiuraniemi)
+- [[`27f5c02748`](https://github.com/datrs/random-access-memory/commit/27f5c0274806b793bb3fa1101bd948ee3046db35)] Use beta.0 as the version until dependencies are bumped (Timo Tiuraniemi)
+- [[`2c74bccf2c`](https://github.com/datrs/random-access-memory/commit/2c74bccf2c4922ac7507616e66e0dce5af3d0bd8)] Set version to 3.0.0, bump edition to 2021 (Timo Tiuraniemi)
+- [[`c47c2db567`](https://github.com/datrs/random-access-memory/commit/c47c2db5674a327d4397b72d24f13c3fbef273f9)] Fix clippy issues, forbid unsafe code (Timo Tiuraniemi)
+- [[`fcd398ada1`](https://github.com/datrs/random-access-memory/commit/fcd398ada15ed9f50a0483884a98cfd94b9ae700)] Complete documentation (Timo Tiuraniemi)
+- [[`5dd26f3165`](https://github.com/datrs/random-access-memory/commit/5dd26f316551dd343dff81ffed9b1e64229a4162)] Use a single OutOfBounds error for more convenient error matching (Timo Tiuraniemi)
+- [[`9ebea000d6`](https://github.com/datrs/random-access-memory/commit/9ebea000d63f63ad5b0532ef2cb37c870ea0d754)] Switch from anyhow to thiserror and RandomAccessError (Timo Tiuraniemi)
+- [[`ecf536f285`](https://github.com/datrs/random-access-memory/commit/ecf536f2852d436f018f286a40a9fedd8774a3af)] Enforce delete offset and truncate when larger (Timo Tiuraniemi)
+- [[`606b1e33eb`](https://github.com/datrs/random-access-memory/commit/606b1e33eb291b5d87673fa8414b916ef43fa890)] Migrate bench from libtest to criterion, add del test (Timo Tiuraniemi)
+- [[`b73a3c653e`](https://github.com/datrs/random-access-memory/commit/b73a3c653e99a1b3b97a28f87446f35d57ce5816)] Use tokio-compatible RandomAccessStorage (Timo Tiuraniemi)
+- [[`3e90f7cc41`](https://github.com/datrs/random-access-memory/commit/3e90f7cc41ef565bd496678dca515041f8a6ed9e)] Fix len() missing &mut (Timo Tiuraniemi)
+- [[`5b064d7e71`](https://github.com/datrs/random-access-memory/commit/5b064d7e7174d344592e0da2e1d2a1dce4960865)] feat: del and truncate using intmap (Timo Tiuraniemi)
+- [[`6c9761f53a`](https://github.com/datrs/random-access-memory/commit/6c9761f53a3da5fed7b0400cf949958bb3fe5f24)] Update changelog (Bruno Tavares)
+
+### Stats
+```diff
+  .github/workflows/ci.yml |  95 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ CHANGELOG.md             |  20 +++++++++++++++
+ Cargo.toml               |  26 +++++++++++--------
+ README.md                |  25 +++++-------------
+ benches/sync.rs          |  59 +++++++++++++++++++++++++++---------------
+ src/lib.rs               | 287 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----------------------------------------------------------
+ tests/model.rs           |  77 +++++++++++++++++++++++++++++++++++++------------------
+ tests/test.rs            |  96 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ 8 files changed, 526 insertions(+), 159 deletions(-)
+```
+
+
 ## 2020-03-03, Version 2.0.0
 ### Commits
 - [[`cab67711c4`](https://github.com/datrs/random-access-memory/commit/cab67711c42f6229fcf01fac0bfae0b5d0a3fe86)] (cargo-release) version 2.0.0 (Bruno Tavares)
