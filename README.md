@@ -18,9 +18,9 @@ $ cargo add random-access-memory
 [MIT](./LICENSE-MIT) OR [Apache-2.0](./LICENSE-APACHE)
 
 [1]: https://img.shields.io/crates/v/random-access-memory.svg?style=flat-square
-[2]: https://crates.io/crate/random-access-memory
-[3]: https://img.shields.io/travis/datrs/random-access-memory.svg?style=flat-square
-[4]: https://travis-ci.org/datrs/random-access-memory
+[2]: https://crates.io/crates/random-access-memory
+[3]: https://github.com/datrs/random-access-memory/actions/workflows/ci.yml/badge.svg
+[4]: https://github.com/datrs/random-access-memory/actions[
 [5]: https://img.shields.io/crates/d/random-access-memory.svg?style=flat-square
 [6]: https://crates.io/crates/random-access-memory
 [7]: https://docs.rs/random-access-memory/badge.svg
