@@ -1,38 +1,53 @@
 use self::Op::*;
-use quickcheck::{quickcheck, Arbitrary, Gen};
-use rand::Rng;
+use proptest::prelude::*;
+use proptest::test_runner::FileFailurePersistence;
+use proptest_derive::Arbitrary;
 use random_access_memory as ram;
 use random_access_storage::RandomAccess;
 use std::u8;
 
-const MAX_FILE_SIZE: u64 = 5 * 10; // 5mb
+const MAX_FILE_SIZE: u64 = 50000;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Arbitrary)]
 enum Op {
-  Read { offset: u64, length: u64 },
-  Write { offset: u64, data: Vec<u8> },
+  Read {
+    #[proptest(strategy(offset_length_strategy))]
+    offset: u64,
+    #[proptest(strategy(offset_length_strategy))]
+    length: u64,
+  },
+  Write {
+    #[proptest(strategy(offset_length_strategy))]
+    offset: u64,
+    #[proptest(regex(data_regex))]
+    data: Vec<u8>,
+  },
+  Delete {
+    #[proptest(strategy(offset_length_strategy))]
+    offset: u64,
+    #[proptest(strategy(offset_length_strategy))]
+    length: u64,
+  },
 }
 
-impl Arbitrary for Op {
-  fn arbitrary<G: Gen>(g: &mut G) -> Self {
-    let offset: u64 = g.gen_range(0, MAX_FILE_SIZE);
-    let length: u64 = g.gen_range(0, MAX_FILE_SIZE / 3);
-
-    if g.gen::<bool>() {
-      Read { offset, length }
-    } else {
-      let mut data = Vec::with_capacity(length as usize);
-      for _ in 0..length {
-        data.push(u8::arbitrary(g));
-      }
-      Write { offset, data }
-    }
-  }
+fn offset_length_strategy() -> impl Strategy<Value = u64> {
+  0..MAX_FILE_SIZE
 }
 
-quickcheck! {
-  fn implementation_matches_model(ops: Vec<Op>) -> bool {
-    async_std::task::block_on(async {
+fn data_regex() -> &'static str {
+  // Write 0..5000 byte chunks of ASCII characters as dummy data
+  "([ -~]{1,1}\n){0,5000}"
+}
+
+proptest! {
+  #![proptest_config(ProptestConfig {
+    failure_persistence: Some(Box::new(FileFailurePersistence::WithSource("regressions"))),
+    ..Default::default()
+  })]
+
+  #[test]
+  fn implementation_matches_model(ops: Vec<Op>) {
+    assert!(async_std::task::block_on(async {
       let mut implementation = ram::RandomAccessMemory::new(10);
       let mut model = vec![];
 
@@ -54,12 +69,24 @@ quickcheck! {
             if model.len() < end as usize {
               model.resize(end as usize, 0);
             }
-            implementation.write(offset, &*data).await.expect("Writes should be successful.");
+            implementation.write(offset, data).await.expect("Writes should be successful.");
             model[offset as usize..end as usize].copy_from_slice(data);
           },
+          Delete { offset, length } => {
+            if model.len() >= offset as usize {
+              implementation.del(offset, length).await.expect("Deletes should be successful.");
+              if offset + length < model.len() as u64 {
+                model[offset as usize..(offset + length) as usize].fill(0);
+              } else {
+                model.resize(offset as usize, 0);
+              };
+            } else {
+              assert!(implementation.del(offset, length).await.is_err());
+            }
+          }
         }
       }
       true
-    })
+    }));
   }
 }

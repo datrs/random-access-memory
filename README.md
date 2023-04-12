@@ -2,30 +2,17 @@
 [![crates.io version][1]][2] [![build status][3]][4]
 [![downloads][5]][6] [![docs.rs docs][7]][8]
 
-Continuously read,write to memory using random offsets and lengths.
+Continuously read and write to memory using random offsets and lengths
+using abstract interface defined in
+[random-access-storage](https://github.com/datrs/random-access-storage).
 
 - [Documentation][8]
 - [Crate][2]
-
-## Usage
-```rust
-use random_access_memory as ram;
-
-let mut file = ram::Sync::default();
-file.write(0, b"hello").await.unwrap();
-file.write(5, b" world").await.unwrap();
-let text = file.read(0, 11).await.unwrap();
-assert_eq!(text, b"hello world");
-```
 
 ## Installation
 ```sh
 $ cargo add random-access-memory
 ```
-
-## Tasks
-- [x] Sync implementation.
-- [ ] Async implementation (wait for futures 1.0.0).
 
 ## License
 [MIT](./LICENSE-MIT) OR [Apache-2.0](./LICENSE-APACHE)
