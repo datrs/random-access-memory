@@ -20,8 +20,8 @@ $ cargo add random-access-memory
 [1]: https://img.shields.io/crates/v/random-access-memory.svg?style=flat-square
 [2]: https://crates.io/crates/random-access-memory
 [3]: https://github.com/datrs/random-access-memory/actions/workflows/ci.yml/badge.svg
-[4]: https://github.com/datrs/random-access-memory/actions[
+[4]: https://github.com/datrs/random-access-memory/actions
 [5]: https://img.shields.io/crates/d/random-access-memory.svg?style=flat-square
 [6]: https://crates.io/crates/random-access-memory
-[7]: https://docs.rs/random-access-memory/badge.svg
+[7]: https://img.shields.io/badge/docs-latest-blue.svg?style=flat-square
 [8]: https://docs.rs/random-access-memory
