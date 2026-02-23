@@ -7,7 +7,7 @@ documentation = "https://docs.rs/random-access-memory"
 description = "Continuously read and write to memory using random offsets and lengths"
 authors = ["datrs <yoshuawuyts@gmail.com>", "Timo Tiuraniemi <timo.tiuraniemi@iki.fi>"]
 readme = "README.md"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 random-access-storage = "5.0.0"
