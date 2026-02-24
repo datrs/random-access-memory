@@ -8,20 +8,20 @@ async fn can_call_new() {
 
 #[async_std::test]
 async fn can_open_buffer() {
-  let mut file = ram::RandomAccessMemory::default();
+  let file = ram::RandomAccessMemory::default();
   file.write(0, b"hello").await.unwrap();
 }
 
 #[async_std::test]
 async fn can_write() {
-  let mut file = ram::RandomAccessMemory::default();
+  let file = ram::RandomAccessMemory::default();
   file.write(0, b"hello").await.unwrap();
   file.write(5, b" world").await.unwrap();
 }
 
 #[async_std::test]
 async fn can_read() {
-  let mut file = ram::RandomAccessMemory::default();
+  let file = ram::RandomAccessMemory::default();
   file.write(0, b"hello").await.unwrap();
   file.write(5, b" world").await.unwrap();
   let text = file.read(0, 11).await.unwrap();
@@ -31,7 +31,7 @@ async fn can_read() {
 
 #[async_std::test]
 async fn can_len() {
-  let mut file = ram::RandomAccessMemory::default();
+  let file = ram::RandomAccessMemory::default();
   assert_eq!(file.len(), 0);
   file.write(0, b"hello").await.unwrap();
   assert_eq!(file.len(), 5);
@@ -41,7 +41,7 @@ async fn can_len() {
 
 #[async_std::test]
 async fn can_is_empty() {
-  let mut file = ram::RandomAccessMemory::default();
+  let file = ram::RandomAccessMemory::default();
   assert!(file.is_empty());
   file.write(0, b"hello").await.unwrap();
   assert!(!file.is_empty());
@@ -57,7 +57,7 @@ async fn can_delete() {
 }
 
 async fn assert_delete(page_size: usize) {
-  let mut file = ram::RandomAccessMemory::new(page_size);
+  let file = ram::RandomAccessMemory::new(page_size);
   file.write(0, b"hello").await.unwrap();
   file.write(5, b" world").await.unwrap();
   file.write(11, b" people").await.unwrap();
@@ -86,7 +86,7 @@ async fn can_truncate_lt() {
 }
 
 async fn assert_truncate_lt(page_size: usize) {
-  let mut file = ram::RandomAccessMemory::new(page_size);
+  let file = ram::RandomAccessMemory::new(page_size);
   file.write(0, b"hello").await.unwrap();
   file.write(5, b" world").await.unwrap();
   file.write(11, b" people").await.unwrap();
@@ -114,7 +114,7 @@ async fn can_truncate_gt() {
 }
 
 async fn assert_truncate_gt(page_size: usize) {
-  let mut file = ram::RandomAccessMemory::new(page_size);
+  let file = ram::RandomAccessMemory::new(page_size);
   file.write(0, b"hello").await.unwrap();
   file.write(5, b" world").await.unwrap();
   file.write(11, b" people").await.unwrap();
@@ -130,7 +130,7 @@ async fn assert_truncate_gt(page_size: usize) {
 
 #[async_std::test]
 async fn assert_truncate_eq() {
-  let mut file = ram::RandomAccessMemory::new(5);
+  let file = ram::RandomAccessMemory::new(5);
   file.write(0, b"hello").await.unwrap();
   file.write(5, b" world").await.unwrap();
   file.write(11, b" people").await.unwrap();

@@ -48,7 +48,7 @@ proptest! {
   #[test]
   fn implementation_matches_model(ops: Vec<Op>) {
     assert!(async_std::task::block_on(async {
-      let mut implementation = ram::RandomAccessMemory::new(10);
+      let implementation = ram::RandomAccessMemory::new(10);
       let mut model = vec![];
 
       for op in ops {

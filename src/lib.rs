@@ -17,7 +17,7 @@
 //! use random_access_storage::RandomAccess;
 //! use random_access_memory::RandomAccessMemory;
 //!
-//! let mut storage = RandomAccessMemory::default();
+//! let storage = RandomAccessMemory::default();
 //! storage.write(0, b"hello").await.unwrap();
 //! storage.write(5, b" world").await.unwrap();
 //! assert_eq!(storage.read(0, 11).await.unwrap(), b"hello world");
@@ -42,12 +42,12 @@
 //! use random_access_memory::RandomAccessMemory;
 //! use std::fmt::Debug;
 //!
-//! let mut storage = RandomAccessMemory::default();
-//! write_hello_world(&mut storage).await;
+//! let storage = RandomAccessMemory::default();
+//! write_hello_world(&storage).await;
 //! assert_eq!(read_hello_world(&storage).await, b"hello world");
 //!
 //! /// Write with swappable storage
-//! async fn write_hello_world<T>(storage: &mut T)
+//! async fn write_hello_world<T>(storage: &T)
 //! where T: RandomAccess + Debug + Send,
 //! {
 //!   storage.write(0, b"hello").await.unwrap();
