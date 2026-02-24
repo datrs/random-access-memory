@@ -42,9 +42,9 @@ async fn can_len() {
 #[async_std::test]
 async fn can_is_empty() {
   let mut file = ram::RandomAccessMemory::default();
-  assert!(file.is_empty().await.unwrap());
+  assert!(file.is_empty());
   file.write(0, b"hello").await.unwrap();
-  assert!(!file.is_empty().await.unwrap());
+  assert!(!file.is_empty());
 }
 
 #[async_std::test]

@@ -364,10 +364,6 @@ impl RandomAccess for RandomAccessMemory {
     self.inner.lock().unwrap().length
   }
 
-  async fn is_empty(&mut self) -> Result<bool, RandomAccessError> {
-    Ok(self.inner.lock().unwrap().length == 0)
-  }
-
   async fn sync_all(&mut self) -> Result<(), RandomAccessError> {
     Ok(())
   }
