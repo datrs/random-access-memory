@@ -32,11 +32,11 @@ async fn can_read() {
 #[async_std::test]
 async fn can_len() {
   let mut file = ram::RandomAccessMemory::default();
-  assert_eq!(file.len().await.unwrap(), 0);
+  assert_eq!(file.len(), 0);
   file.write(0, b"hello").await.unwrap();
-  assert_eq!(file.len().await.unwrap(), 5);
+  assert_eq!(file.len(), 5);
   file.write(5, b" world").await.unwrap();
-  assert_eq!(file.len().await.unwrap(), 11);
+  assert_eq!(file.len(), 11);
 }
 
 #[async_std::test]
@@ -61,9 +61,9 @@ async fn assert_delete(page_size: usize) {
   file.write(0, b"hello").await.unwrap();
   file.write(5, b" world").await.unwrap();
   file.write(11, b" people").await.unwrap();
-  assert_eq!(file.len().await.unwrap(), 18);
+  assert_eq!(file.len(), 18);
   file.del(6, 2).await.unwrap();
-  assert_eq!(file.len().await.unwrap(), 18);
+  assert_eq!(file.len(), 18);
   let text = file.read(0, 6).await.unwrap();
   assert_eq!(String::from_utf8(text.to_vec()).unwrap(), "hello ");
   let zeros = file.read(6, 2).await.unwrap();
@@ -71,9 +71,9 @@ async fn assert_delete(page_size: usize) {
   let text = file.read(8, 10).await.unwrap();
   assert_eq!(String::from_utf8(text.to_vec()).unwrap(), "rld people");
   file.del(8, 4).await.unwrap();
-  assert_eq!(file.len().await.unwrap(), 18);
+  assert_eq!(file.len(), 18);
   file.del(10, 8).await.unwrap();
-  assert_eq!(file.len().await.unwrap(), 10);
+  assert_eq!(file.len(), 10);
 }
 
 #[async_std::test]
@@ -90,16 +90,16 @@ async fn assert_truncate_lt(page_size: usize) {
   file.write(0, b"hello").await.unwrap();
   file.write(5, b" world").await.unwrap();
   file.write(11, b" people").await.unwrap();
-  assert_eq!(file.len().await.unwrap(), 18);
+  assert_eq!(file.len(), 18);
   file.truncate(7).await.unwrap();
-  assert_eq!(file.len().await.unwrap(), 7);
+  assert_eq!(file.len(), 7);
   let text = file.read(0, 7).await.unwrap();
   assert_eq!(String::from_utf8(text.to_vec()).unwrap(), "hello w");
   if file.read(0, 8).await.is_ok() {
     panic!("storage is too big. read past the end should have failed");
   };
   file.write(11, b" people").await.unwrap();
-  assert_eq!(file.len().await.unwrap(), 18);
+  assert_eq!(file.len(), 18);
   let zeros = file.read(7, 4).await.unwrap();
   assert_eq!(zeros, [0, 0, 0, 0]);
 }
@@ -118,9 +118,9 @@ async fn assert_truncate_gt(page_size: usize) {
   file.write(0, b"hello").await.unwrap();
   file.write(5, b" world").await.unwrap();
   file.write(11, b" people").await.unwrap();
-  assert_eq!(file.len().await.unwrap(), 18);
+  assert_eq!(file.len(), 18);
   file.truncate(22).await.unwrap();
-  assert_eq!(file.len().await.unwrap(), 22);
+  assert_eq!(file.len(), 22);
   let zeros = file.read(18, 4).await.unwrap();
   assert_eq!(zeros, [0, 0, 0, 0]);
   file.write(19, &[1]).await.unwrap();
@@ -134,7 +134,7 @@ async fn assert_truncate_eq() {
   file.write(0, b"hello").await.unwrap();
   file.write(5, b" world").await.unwrap();
   file.write(11, b" people").await.unwrap();
-  assert_eq!(file.len().await.unwrap(), 18);
+  assert_eq!(file.len(), 18);
   file.truncate(18).await.unwrap();
-  assert_eq!(file.len().await.unwrap(), 18);
+  assert_eq!(file.len(), 18);
 }

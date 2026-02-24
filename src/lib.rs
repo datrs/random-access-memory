@@ -21,14 +21,14 @@
 //! storage.write(0, b"hello").await.unwrap();
 //! storage.write(5, b" world").await.unwrap();
 //! assert_eq!(storage.read(0, 11).await.unwrap(), b"hello world");
-//! assert_eq!(storage.len().await.unwrap(), 11);
+//! assert_eq!(storage.len(), 11);
 //! storage.del(5, 2).await.unwrap();
 //! assert_eq!(storage.read(5, 2).await.unwrap(), [0, 0]);
-//! assert_eq!(storage.len().await.unwrap(), 11);
+//! assert_eq!(storage.len(), 11);
 //! storage.truncate(2).await.unwrap();
-//! assert_eq!(storage.len().await.unwrap(), 2);
+//! assert_eq!(storage.len(), 2);
 //! storage.truncate(5).await.unwrap();
-//! assert_eq!(storage.len().await.unwrap(), 5);
+//! assert_eq!(storage.len(), 5);
 //! assert_eq!(storage.read(0, 5).await.unwrap(), [b'h', b'e', 0, 0, 0]);
 //! # })
 //! ```
@@ -360,8 +360,8 @@ impl RandomAccess for RandomAccessMemory {
     self.inner.lock().unwrap().do_truncate(length)
   }
 
-  async fn len(&mut self) -> Result<u64, RandomAccessError> {
-    Ok(self.inner.lock().unwrap().length)
+  fn len(&self) -> u64 {
+    self.inner.lock().unwrap().length
   }
 
   async fn is_empty(&mut self) -> Result<bool, RandomAccessError> {
