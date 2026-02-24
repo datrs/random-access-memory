@@ -345,12 +345,8 @@ impl RandomAccess for RandomAccessMemory {
     ))
   }
 
-  async fn del(
-    &mut self,
-    offset: u64,
-    length: u64,
-  ) -> Result<(), RandomAccessError> {
-    self.inner.lock().unwrap().do_del(offset, length)
+  fn del(&self, offset: u64, length: u64) -> BoxFuture<Result<(), RandomAccessError>> {
+    Box::pin(std::future::ready(self.inner.lock().unwrap().do_del(offset, length)))
   }
 
   #[allow(clippy::comparison_chain)]
