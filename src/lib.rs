@@ -104,10 +104,9 @@ impl MemoryInner {
       self.page_num_and_index(offset + length, true);
 
     // Check if we need to zero bytes in the first page
-    if first_page_start > 0
-      || (first_page_num == last_page_num && last_page_end > 0)
-    {
-      if let Some(page) = self.buffers.get_mut(first_page_num as u64) {
+    if (first_page_start > 0
+      || (first_page_num == last_page_num && last_page_end > 0))
+      && let Some(page) = self.buffers.get_mut(first_page_num as u64) {
         // Need to zero part of the first page
         let begin_page_end = first_page_start
           + cmp::min(length as usize, self.page_size - first_page_start);
@@ -115,7 +114,6 @@ impl MemoryInner {
           page[index] = 0;
         }
       }
-    }
 
     // Delete intermediate pages
     if last_page_num > first_page_num + 1
@@ -133,14 +131,13 @@ impl MemoryInner {
     }
 
     // Finally zero the last page
-    if last_page_num > first_page_num && last_page_end > 0 {
-      if let Some(page) = self.buffers.get_mut(last_page_num as u64) {
+    if last_page_num > first_page_num && last_page_end > 0
+      && let Some(page) = self.buffers.get_mut(last_page_num as u64) {
         // Need to zero part of the final page
         for index in 0..last_page_end {
           page[index] = 0;
         }
       }
-    }
   }
 
   fn do_read(

@@ -4,7 +4,6 @@ use proptest::test_runner::FileFailurePersistence;
 use proptest_derive::Arbitrary;
 use random_access_memory as ram;
 use random_access_storage::RandomAccess;
-use std::u8;
 
 const MAX_FILE_SIZE: u64 = 50000;
 
