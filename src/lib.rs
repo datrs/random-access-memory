@@ -328,12 +328,10 @@ impl RandomAccessMemory {
 
 #[async_trait::async_trait]
 impl RandomAccess for RandomAccessMemory {
-  async fn write(
-    &mut self,
-    offset: u64,
-    data: &[u8],
-  ) -> Result<(), RandomAccessError> {
-    self.inner.lock().unwrap().do_write(offset, data)
+  fn write(&self, offset: u64, data: &[u8]) -> BoxFuture<Result<(), RandomAccessError>> {
+    let data = data.to_vec();
+    let inner = self.inner.clone();
+    Box::pin(std::future::ready(inner.lock().unwrap().do_write(offset, &data)))
   }
 
   fn read(
