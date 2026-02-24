@@ -11,7 +11,6 @@ edition = "2024"
 
 [dependencies]
 random-access-storage = { path = "../storage" }
-async-trait = "0.1"
 intmap = "2.0.0"
 
 [dev-dependencies]

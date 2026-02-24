@@ -323,7 +323,6 @@ impl RandomAccessMemory {
   }
 }
 
-#[async_trait::async_trait]
 impl RandomAccess for RandomAccessMemory {
   fn write(&self, offset: u64, data: &[u8]) -> BoxFuture<Result<(), RandomAccessError>> {
     let data = data.to_vec();
