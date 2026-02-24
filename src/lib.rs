@@ -354,8 +354,8 @@ impl RandomAccess for RandomAccessMemory {
   }
 
   #[allow(clippy::comparison_chain)]
-  async fn truncate(&mut self, length: u64) -> Result<(), RandomAccessError> {
-    self.inner.lock().unwrap().do_truncate(length)
+  fn truncate(&self, length: u64) -> BoxFuture<Result<(), RandomAccessError>> {
+    Box::pin(std::future::ready(self.inner.lock().unwrap().do_truncate(length)))
   }
 
   fn len(&self) -> u64 {
