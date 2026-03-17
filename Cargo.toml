@@ -1,6 +1,6 @@
 [package]
 name = "random-access-memory"
-version = "3.0.0"
+version = "4.0.0-alpha"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/datrs/random-access-memory"
 documentation = "https://docs.rs/random-access-memory"
