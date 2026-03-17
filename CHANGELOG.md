@@ -13,8 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-* Bump edition to 2024
-* Remove `async-trait` dependency — all trait methods now return `BoxFuture` directly
+* Use new version of `random-access-storage` that returns owned futures.
+* Bump edition to 2024.
+* Remove `async-trait` dependency.
 
 ### Removed
 
