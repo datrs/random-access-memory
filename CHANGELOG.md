@@ -1,4 +1,27 @@
-## 2023-04-12, Version 3.0.0
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+<!-- next-header -->
+
+## [Unreleased] - ReleaseDate
+
+### Added
+
+### Changed
+
+* Use new version of `random-access-storage` that returns owned futures.
+* Bump edition to 2024.
+* Remove `async-trait` dependency.
+
+### Removed
+
+
+
+## [3.0.0] - 2023-04-12
 ### Commits
 - [[`ef600832dd`](https://github.com/datrs/random-access-memory/commit/ef600832ddc13d2ba90250ef710a9e0b142e4bad)] Release 3.0.0 (Timo Tiuraniemi)
 - [[`e6d7e97ed1`](https://github.com/datrs/random-access-memory/commit/e6d7e97ed1ca4e953a8279e79b614db15562b999)] Switch from Travis to GHA (Timo Tiuraniemi)
@@ -31,7 +54,7 @@
 ```
 
 
-## 2020-03-03, Version 2.0.0
+## [2.0.0] - 2020-03-03
 ### Commits
 - [[`cab67711c4`](https://github.com/datrs/random-access-memory/commit/cab67711c42f6229fcf01fac0bfae0b5d0a3fe86)] (cargo-release) version 2.0.0 (Bruno Tavares)
 - [[`fc07e9cfef`](https://github.com/datrs/random-access-memory/commit/fc07e9cfefdc808f950fada80df7bfe697eaad6d)] Implement async API for random-access-storage (#26) (Bruno Tavares)
@@ -51,7 +74,7 @@
 ```
 
 
-## 2020-03-03, Version 1.2.0
+## [1.2.0] - 2020-03-03
 ### Commits
 - [[`d9fbf73cf1`](https://github.com/datrs/random-access-memory/commit/d9fbf73cf182e6f02e5adc4c016afe38e8650a88)] (cargo-release) version 1.2.0 (Bruno Tavares)
 - [[`0b845fbcc7`](https://github.com/datrs/random-access-memory/commit/0b845fbcc747093d8c9eae972e92c8d4a692a208)] Move from failure to use stderr (#25) (Bruno Tavares)
@@ -64,7 +87,7 @@
 ```
 
 
-## 2019-04-24, Version 1.0.0
+## [1.0.0] - 2019-04-24
 ### Commits
 - [[`a7ff8ea564`](https://github.com/datrs/random-access-memory/commit/a7ff8ea564f11673b3e39d605befe9b25fc58574)] (cargo-release) version 1.0.0 (Yoshua Wuyts)
 - [[`76c0ebfe1b`](https://github.com/datrs/random-access-memory/commit/76c0ebfe1ba046871430f03fe5876a4e27554fb6)] Update random-access-storage to 2.0.0 (#12) (Jack Jennings)
@@ -86,7 +109,7 @@
 ```
 
 
-## 2018-08-30, Version 0.5.0
+## [0.5.0] - 2018-08-30
 ### Commits
 - [[`3baa7c2d23`](https://github.com/datrs/random-access-memory/commits/3baa7c2d23dfa774ac5e1d2b38bbb171eaf95bc0)] (cargo-release) version 0.5.0 (Yoshua Wuyts)
 - [[`300ead96ab`](https://github.com/datrs/random-access-memory/commits/300ead96ab4eab5b66f786f3b0562ddb29571d27)] Random access always open (#4) (Szabolcs Berecz)
@@ -106,14 +129,14 @@
 ```
 
 
-## 2018-08-23, Version 0.4.0
+## [0.4.0] - 2018-08-23
 ### Commits
 - [[`7876a1a1ca`](https://github.com/datrs/random-access-memory/commits/7876a1a1ca10913a6126b767f4d07c3bae99dd8e)] (cargo-release) version 0.4.0 (Yoshua Wuyts)
 - [[`cc83784775`](https://github.com/datrs/random-access-memory/commits/cc83784775a7cc737c97d514e88cdcb9ca2e718a)] upgrade random-access-storage (#3)
 
 * upgrade random-access-storage
 
-* cargo fmt (Yoshua Wuyts)
+* cargo fmt (Yoshua Wuyts)
 - [[`fae1a6509b`](https://github.com/datrs/random-access-memory/commits/fae1a6509b3c3825b3c063a627f64f85ab11cf40)] fix rustfmt in travis.yml (Yoshua Wuyts)
 - [[`51c944434b`](https://github.com/datrs/random-access-memory/commits/51c944434b46c16ef7ba4028ac31ec10d6d64fe3)] fix benches (Yoshua Wuyts)
 - [[`abfd505e04`](https://github.com/datrs/random-access-memory/commits/abfd505e049da526af068f475c1e8730e33238b9)] (cargo-release) start next development iteration 0.3.1-alpha.0 (Yoshua Wuyts)
@@ -128,4 +151,10 @@
  5 files changed, 23 insertions(+), 16 deletions(-)
 ```
 
-
+<!-- next-url -->
+[Unreleased]: https://github.com/datrs/random-access-memory/compare/v3.0.0...HEAD
+[3.0.0]: https://github.com/datrs/random-access-memory/compare/v2.0.0...v3.0.0
+[2.0.0]: https://github.com/datrs/random-access-memory/compare/v1.2.0...v2.0.0
+[1.2.0]: https://github.com/datrs/random-access-memory/compare/v1.0.0...v1.2.0
+[1.0.0]: https://github.com/datrs/random-access-memory/compare/v0.5.0...v1.0.0
+[0.5.0]: https://github.com/datrs/random-access-memory/compare/v0.4.0...v0.5.0

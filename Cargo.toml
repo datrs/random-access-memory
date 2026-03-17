@@ -1,22 +1,21 @@
 [package]
 name = "random-access-memory"
-version = "3.0.0"
+version = "4.0.0-alpha"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/datrs/random-access-memory"
 documentation = "https://docs.rs/random-access-memory"
 description = "Continuously read and write to memory using random offsets and lengths"
 authors = ["datrs <yoshuawuyts@gmail.com>", "Timo Tiuraniemi <timo.tiuraniemi@iki.fi>"]
 readme = "README.md"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
-random-access-storage = "5.0.0"
-async-trait = "0.1"
+random-access-storage = "=6.0.0-alpha"
 intmap = "2.0.0"
 
 [dev-dependencies]
 proptest = "1.1.0"
-proptest-derive = "0.2.0"
+proptest-derive = "0.8.0"
 async-std = { version = "1.12.0", features = ["attributes"] }
 criterion = "0.4"
 

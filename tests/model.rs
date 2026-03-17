@@ -1,42 +1,40 @@
 use self::Op::*;
-use proptest::prelude::*;
-use proptest::test_runner::FileFailurePersistence;
+use proptest::{prelude::*, test_runner::FileFailurePersistence};
 use proptest_derive::Arbitrary;
 use random_access_memory as ram;
 use random_access_storage::RandomAccess;
-use std::u8;
 
 const MAX_FILE_SIZE: u64 = 50000;
 
 #[derive(Clone, Debug, Arbitrary)]
 enum Op {
-  Read {
-    #[proptest(strategy(offset_length_strategy))]
-    offset: u64,
-    #[proptest(strategy(offset_length_strategy))]
-    length: u64,
-  },
-  Write {
-    #[proptest(strategy(offset_length_strategy))]
-    offset: u64,
-    #[proptest(regex(data_regex))]
-    data: Vec<u8>,
-  },
-  Delete {
-    #[proptest(strategy(offset_length_strategy))]
-    offset: u64,
-    #[proptest(strategy(offset_length_strategy))]
-    length: u64,
-  },
+    Read {
+        #[proptest(strategy(offset_length_strategy))]
+        offset: u64,
+        #[proptest(strategy(offset_length_strategy))]
+        length: u64,
+    },
+    Write {
+        #[proptest(strategy(offset_length_strategy))]
+        offset: u64,
+        #[proptest(regex(data_regex))]
+        data: Vec<u8>,
+    },
+    Delete {
+        #[proptest(strategy(offset_length_strategy))]
+        offset: u64,
+        #[proptest(strategy(offset_length_strategy))]
+        length: u64,
+    },
 }
 
 fn offset_length_strategy() -> impl Strategy<Value = u64> {
-  0..MAX_FILE_SIZE
+    0..MAX_FILE_SIZE
 }
 
 fn data_regex() -> &'static str {
-  // Write 0..5000 byte chunks of ASCII characters as dummy data
-  "([ -~]{1,1}\n){0,5000}"
+    // Write 0..5000 byte chunks of ASCII characters as dummy data
+    "([ -~]{1,1}\n){0,5000}"
 }
 
 proptest! {
@@ -48,7 +46,7 @@ proptest! {
   #[test]
   fn implementation_matches_model(ops: Vec<Op>) {
     assert!(async_std::task::block_on(async {
-      let mut implementation = ram::RandomAccessMemory::new(10);
+      let implementation = ram::RandomAccessMemory::new(10);
       let mut model = vec![];
 
       for op in ops {
